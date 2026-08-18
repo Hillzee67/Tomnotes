@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b1d1e">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1b1d1e;
+    --panel: #232527;
+    --panel-2: #2a2d2f;
+    --line: #35383a;
+    --text: #d8d4c8;
+    --text-dim: #8d8a80;
+    --accent: #7fa86f;      /* headline / TODO green */
+    --accent-dim: #5c7a52;
+    --gold: #d9b46a;        /* scheduled / today */
+    --rust: #b5533c;        /* overdue */
+    --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column;
+    height:100vh; height:100dvh;
+    overscroll-behavior:none;
+  }
+  header.tabs{
+    display:flex; gap:2px; padding:10px 10px 0 10px; background:var(--bg);
+    flex-shrink:0;
+  }
+  header.tabs button{
+    font-family:var(--mono); font-size:13px; letter-spacing:.02em;
+    background:var(--panel); color:var(--text-dim); border:1px solid var(--line);
+    border-bottom:none; padding:9px 14px; border-radius:6px 6px 0 0;
+    cursor:pointer;
+  }
+  header.tabs button.active{
+    background:var(--panel-2); color:var(--accent); font-weight:600;
+  }
+  main{
+    flex:1; overflow-y:auto; background:var(--panel-2);
+    border-top:1px solid var(--line);
+    padding:16px 14px 90px 14px;
+  }
+  h1{font-family:var(--mono); font-size:15px; color:var(--text-dim); font-weight:500; margin:0 0 14px 0; letter-spacing:.02em;}
+  h1 .star{color:var(--accent);}
+  section.group{margin-bottom:22px;}
+  section.group h2{
+    font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.12em;
+    margin:0 0 8px 2px; font-weight:600;
+  }
+  section.group.overdue h2{color:var(--rust);}
+  section.group.today h2{color:var(--gold);}
+  section.group.upcoming h2{color:var(--text-dim);}
+  section.group.unscheduled h2{color:var(--text-dim);}
+  .task{
+    display:flex; align-items:flex-start; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px; margin-bottom:6px;
+  }
+  .task .box{
+    flex-shrink:0; width:16px; height:16px; margin-top:2px; border-radius:3px;
+    border:1.5px solid var(--accent-dim); cursor:pointer; background:transparent;
+  }
+  .task .box:active{background:var(--accent-dim);}
+  .task .body{flex:1; min-width:0;}
+  .task .title{font-size:14px; line-height:1.4; word-break:break-word;}
+  .task .meta{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:3px;}
+  .task .meta .file{color:var(--accent-dim);}
+  .task.overdue .meta{color:var(--rust);}
+  .task.today .meta{color:var(--gold);}
+  .empty{color:var(--text-dim); font-size:13px; font-family:var(--mono); padding:6px 2px;}
+  .filelist .item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 12px; background:var(--panel); border:1px solid var(--line);
+    border-radius:8px; margin-bottom:6px; cursor:pointer; font-family:var(--mono); font-size:13px;
+  }
+  .filelist .item:active{background:var(--panel-2);}
+  .filelist .item .path{color:var(--text-dim); font-size:11px; margin-top:2px;}
+  button.primary{
+    font-family:var(--sans); font-weight:600; font-size:13px;
+    background:var(--accent-dim); color:#0f1210; border:none; border-radius:7px;
+    padding:10px 16px; cursor:pointer;
+  }
+  button.ghost{
+    font-family:var(--sans); font-size:13px; background:transparent; color:var(--text-dim);
+    border:1px solid var(--line); border-radius:7px; padding:9px 14px; cursor:pointer;
+  }
+  .row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  label{display:block; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin:12px 0 5px 2px; text-transform:uppercase; letter-spacing:.08em;}
+  input[type=text], input[type=password]{
+    width:100%; background:var(--panel); border:1px solid var(--line); color:var(--text);
+    font-family:var(--mono); font-size:13.5px; padding:10px 11px; border-radius:7px;
+  }
+  textarea{
+    width:100%; min-height:52vh; background:var(--panel); border:1px solid var(--line);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.55;
+    padding:12px; border-radius:8px; resize:vertical;
+  }
+  .editor-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;}
+  .editor-topbar .name{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); word-break:break-all;}
+  footer.modeline{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    font-family:var(--mono); font-size:11px; color:var(--text-dim);
+    background:var(--panel); border-top:1px solid var(--line);
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom)) 12px;
+    display:flex; justify-content:space-between; gap:10px;
+  }
+  footer.modeline .status.ok{color:var(--accent);}
+  footer.modeline .status.err{color:var(--rust);}
+  footer.modeline .status.busy{color:var(--gold);}
+  a{color:var(--accent);}
+  ::selection{background:var(--accent-dim); color:#0f1210;}
+</style>
+</head>
+<body>
+
+<header class="tabs" id="tabs">
+  <button data-tab="agenda" class="active">agenda</button>
+  <button data-tab="files">files</button>
+  <button data-tab="settings">settings</button>
+</header>
+
+<main id="main"></main>
+
+<footer class="modeline">
+  <span id="ml-buffer">*agenda*</span>
+  <span id="ml-status" class="status">not configured</span>
+</footer>
+
+<script>
+/* ---------- storage ---------- */
+const store = {
+  get(k, d=null){ try{ const v = localStorage.getItem(k); return v===null? d : JSON.parse(v);}catch(e){return d;} },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+let settings = store.get('gh_settings', {token:'', owner:'', repo:'', branch:'main', notesPath:'notes'});
+let fileCache = {};   // path -> {content, sha}
+let tasksCache = [];  // parsed tasks from last agenda refresh
+let currentTab = 'agenda';
+
+/* ---------- github api ---------- */
+function ghHeaders(){
+  return {
+    'Authorization': 'token ' + settings.token,
+    'Accept': 'application/vnd.github+json'
+  };
+}
+function apiBase(){
+  return `https://api.github.com/repos/${settings.owner}/${settings.repo}`;
+}
+async function ghGetDir(path){
+  const url = `${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`;
+  const res = await fetch(url, {headers: ghHeaders()});
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  return res.json();
+}
+async function ghGetFile(path){
+  const url = `${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`;
+  const res = await fetch(url, {headers: ghHeaders()});
+  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  const data = await res.json();
+  const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+  return {content, sha: data.sha};
+}
+async function ghPutFile(path, content, sha, message){
+  const url = `${apiBase()}/contents/${path}`;
+  const body = {
+    message: message || `Update ${path}`,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: settings.branch
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  return res.json();
+}
+async function listOrgFiles(path){
+  let out = [];
+  let entries;
+  try{ entries = await ghGetDir(path); } catch(e){ throw e; }
+  if (!Array.isArray(entries)) return out;
+  for (const e of entries){
+    if (e.type === 'dir') out = out.concat(await listOrgFiles(e.path));
+    else if (e.type === 'file' && e.path.endsWith('.org')) out.push(e.path);
+  }
+  return out;
+}
+
+/* ---------- org parsing ---------- */
+const HEADLINE_RE = /^(\*+)\s+(TODO|NEXT|WAITING|DONE|CANCELLED)?\s*(?:\[#([A-C])\]\s*)?(.*)$/;
+const DATE_RE = /(SCHEDULED|DEADLINE):\s*<(\d{4}-\d{2}-\d{2})[^>]*>/g;
+
+function parseOrgFile(path, text){
+  const lines = text.split('\n');
+  const tasks = [];
+  for (let i=0; i<lines.length; i++){
+    const m = lines[i].match(HEADLINE_RE);
+    if (!m || !m[2]) continue; // only lines with a TODO-style keyword
+    const state = m[2];
+    const priority = m[3] || null;
+    const title = m[4].trim();
+    let scheduled = null, deadline = null;
+    // planning info is usually the line right after the headline
+    if (lines[i+1]){
+      let dm;
+      DATE_RE.lastIndex = 0;
+      while ((dm = DATE_RE.exec(lines[i+1])) !== null){
+        if (dm[1] === 'SCHEDULED') scheduled = dm[2];
+        if (dm[1] === 'DEADLINE') deadline = dm[2];
+      }
+    }
+    tasks.push({file: path, lineIndex: i, state, priority, title, scheduled, deadline});
+  }
+  return tasks;
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+/* ---------- agenda ---------- */
+async function refreshAgenda(){
+  setStatus('busy', 'syncing…');
+  try{
+    const files = await listOrgFiles(settings.notesPath);
+    const all = [];
+    for (const path of files){
+      const {content, sha} = await ghGetFile(path);
+      fileCache[path] = {content, sha};
+      all.push(...parseOrgFile(path, content));
+    }
+    tasksCache = all;
+    setStatus('ok', `synced ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`);
+  }catch(e){
+    setStatus('err', e.message);
+  }
+  renderAgenda();
+}
+
+function renderAgenda(){
+  const today = todayStr();
+  const open = tasksCache.filter(t => t.state !== 'DONE' && t.state !== 'CANCELLED');
+  const overdue = open.filter(t => (t.deadline && t.deadline < today) || (t.scheduled && t.scheduled < today));
+  const dueToday = open.filter(t => (t.deadline === today || t.scheduled === today) && !overdue.includes(t));
+  const upcoming = open.filter(t => {
+    const d = t.deadline || t.scheduled;
+    return d && d > today;
+  });
+  const unscheduled = open.filter(t => !t.scheduled && !t.deadline);
+
+  const main = document.getElementById('main');
+  if (!settings.token || !settings.owner || !settings.repo){
+    main.innerHTML = `<h1><span class="star">*</span> agenda</h1><div class="empty">Not connected yet — head to the Settings tab and add your repo details.</div>`;
+    return;
+  }
+  main.innerHTML = `<h1><span class="star">*</span> agenda</h1>` +
+    group('overdue', 'Overdue', overdue) +
+    group('today', 'Today', dueToday) +
+    group('upcoming', 'Upcoming', upcoming) +
+    group('unscheduled', 'Unscheduled', unscheduled) +
+    `<div class="row" style="margin-top:16px;">
+       <button class="ghost" onclick="refreshAgenda()">↻ refresh</button>
+     </div>`;
+}
+
+function group(cls, label, items){
+  if (!items.length) return '';
+  const rows = items.map(t => {
+    const date = t.deadline || t.scheduled;
+    const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
+    const idx = tasksCache.indexOf(t);
+    return `<div class="task ${cls}">
+      <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
+      <div class="body">
+        <div class="title">${escapeHtml(t.title)}</div>
+        <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<section class="group ${cls}"><h2>${label}</h2>${rows}</section>`;
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function toggleTask(idx){
+  const t = tasksCache[idx];
+  if (!t) return;
+  const cached = fileCache[t.file];
+  if (!cached) return;
+  const lines = cached.content.split('\n');
+  lines[t.lineIndex] = lines[t.lineIndex].replace(/^(\*+\s+)(TODO|NEXT|WAITING)\b/, '$1DONE');
+  const newContent = lines.join('\n');
+  setStatus('busy', 'saving…');
+  try{
+    const res = await ghPutFile(t.file, newContent, cached.sha, `Mark done: ${t.title}`);
+    fileCache[t.file] = {content: newContent, sha: res.content.sha};
+    t.state = 'DONE';
+    setStatus('ok', 'saved');
+    renderAgenda();
+  }catch(e){
+    setStatus('err', e.message);
+  }
+}
+
+/* ---------- files tab ---------- */
+async function renderFiles(){
+  const main = document.getElementById('main');
+  if (!settings.token || !settings.owner || !settings.repo){
+    main.innerHTML = `<h1><span class="star">*</span> files</h1><div class="empty">Not connected yet — head to the Settings tab and add your repo details.</div>`;
+    return;
+  }
+  main.innerHTML = `<h1><span class="star">*</span> files</h1><div class="row"><button class="primary" onclick="createFile()">+ new file</button><button class="ghost" onclick="renderFiles()">↻ refresh</button></div><div class="filelist" id="filelist"><div class="empty">loading…</div></div>`;
+  try{
+    const files = await listOrgFiles(settings.notesPath);
+    const list = document.getElementById('filelist');
+    if (!files.length){ list.innerHTML = `<div class="empty">No .org files in "${settings.notesPath}" yet.</div>`; return; }
+    list.innerHTML = files.map(f => `<div class="item" onclick="openFile('${f.replace(/'/g,"\\'")}')"><div><div>${escapeHtml(f.split('/').pop())}</div><div class="path">${escapeHtml(f)}</div></div><span>›</span></div>`).join('');
+  }catch(e){
+    document.getElementById('filelist').innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function createFile(){
+  const name = prompt('New file name (e.g. projects.org):');
+  if (!name) return;
+  const path = settings.notesPath + '/' + name.replace(/^\/+/, '');
+  const template = `* TODO \n`;
+  setStatus('busy', 'creating…');
+  try{
+    await ghPutFile(path, template, null, `Create ${path}`);
+    setStatus('ok', 'created');
+    openFile(path);
+  }catch(e){
+    setStatus('err', e.message);
+  }
+}
+
+async function openFile(path){
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div><div class="empty">loading…</div>`;
+  document.getElementById('ml-buffer').textContent = path.split('/').pop();
+  try{
+    const {content, sha} = await ghGetFile(path);
+    fileCache[path] = {content, sha};
+    main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>
+      <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
+  }catch(e){
+    main.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function saveFile(path){
+  const content = document.getElementById('editor-area').value;
+  const cached = fileCache[path];
+  setStatus('busy', 'saving…');
+  try{
+    const res = await ghPutFile(path, content, cached ? cached.sha : null, `Edit ${path}`);
+    fileCache[path] = {content, sha: res.content.sha};
+    setStatus('ok', 'saved');
+  }catch(e){
+    setStatus('err', e.message);
+  }
+}
+
+/* ---------- settings tab ---------- */
+function renderSettings(){
+  document.getElementById('ml-buffer').textContent = '*settings*';
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <h1><span class="star">*</span> settings</h1>
+    <label>GitHub token (repo scope)</label>
+    <input type="password" id="s-token" value="${settings.token}" placeholder="ghp_...">
+    <label>Owner</label>
+    <input type="text" id="s-owner" value="${settings.owner}" placeholder="your-username">
+    <label>Repository</label>
+    <input type="text" id="s-repo" value="${settings.repo}" placeholder="notes">
+    <label>Branch</label>
+    <input type="text" id="s-branch" value="${settings.branch}" placeholder="main">
+    <label>Notes folder</label>
+    <input type="text" id="s-path" value="${settings.notesPath}" placeholder="notes">
+    <div class="row" style="margin-top:16px;">
+      <button class="primary" onclick="saveSettings()">save & connect</button>
+    </div>
+    <div class="empty" style="margin-top:18px; line-height:1.6;">
+      Create a fine-grained personal access token scoped only to this repo, with read/write access to "Contents". Nothing is sent anywhere except directly to api.github.com from this page.
+    </div>
+  `;
+}
+
+function saveSettings(){
+  settings = {
+    token: document.getElementById('s-token').value.trim(),
+    owner: document.getElementById('s-owner').value.trim(),
+    repo: document.getElementById('s-repo').value.trim(),
+    branch: document.getElementById('s-branch').value.trim() || 'main',
+    notesPath: document.getElementById('s-path').value.trim().replace(/\/+$/,'') || 'notes'
+  };
+  store.set('gh_settings', settings);
+  switchTab('agenda');
+  refreshAgenda();
+}
+
+/* ---------- tabs / status ---------- */
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'agenda'){ document.getElementById('ml-buffer').textContent = '*agenda*'; renderAgenda(); }
+  else if (tab === 'files'){ document.getElementById('ml-buffer').textContent = '*files*'; renderFiles(); }
+  else if (tab === 'settings'){ renderSettings(); }
+}
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-tab]');
+  if (btn) switchTab(btn.dataset.tab);
+});
+
+function setStatus(kind, msg){
+  const el = document.getElementById('ml-status');
+  el.className = 'status ' + kind;
+  el.textContent = msg;
+}
+
+/* ---------- boot ---------- */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+if (settings.token && settings.owner && settings.repo){
+  refreshAgenda();
+} else {
+  setStatus('err', 'not configured');
+  renderAgenda();
+}
+</script>
+</body>
+</html>
