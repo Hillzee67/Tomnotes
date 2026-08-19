@@ -360,7 +360,7 @@ async function openFile(path){
     const {content, sha} = await ghGetFile(path);
     fileCache[path] = {content, sha};
     main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>
-      <div class="empty" style="margin-bottom:8px;">alt+t toggle todo · alt+s insert scheduled (today)</div>
+      <div class="empty" style="margin-bottom:8px;">${SHORTCUT_HINT}</div>
       <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
     document.getElementById('editor-area').addEventListener('keydown', handleEditorShortcut);
   }catch(e){
@@ -408,10 +408,15 @@ function insertScheduledAtCursor(ta){
 
 function handleEditorShortcut(e){
   if (!e.altKey) return;
-  const k = e.key.toLowerCase();
-  if (k === 't'){ e.preventDefault(); toggleTodoAtCursor(e.target); }
-  else if (k === 's'){ e.preventDefault(); insertScheduledAtCursor(e.target); }
+  // Use e.code (physical key) rather than e.key: on macOS, Option+letter
+  // produces composed characters (e.g. Option+T → "†") at the e.key level,
+  // which would silently fail a character-based check.
+  if (e.code === 'KeyT'){ e.preventDefault(); toggleTodoAtCursor(e.target); }
+  else if (e.code === 'KeyS'){ e.preventDefault(); insertScheduledAtCursor(e.target); }
 }
+
+const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+const SHORTCUT_HINT = IS_MAC ? '⌥T toggle todo · ⌥S insert scheduled (today)' : 'alt+t toggle todo · alt+s insert scheduled (today)';
 
 async function saveFile(path){
   const content = document.getElementById('editor-area').value;
