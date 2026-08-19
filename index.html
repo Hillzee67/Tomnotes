@@ -363,6 +363,7 @@ async function openFile(path){
       <div class="empty" style="margin-bottom:8px;">${SHORTCUT_HINT}</div>
       <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
     document.getElementById('editor-area').addEventListener('keydown', handleEditorShortcut);
+    document.getElementById('editor-area').addEventListener('beforeinput', handleEditorBeforeInput);
   }catch(e){
     main.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
   }
@@ -406,17 +407,36 @@ function insertScheduledAtCursor(ta){
   ta.selectionStart = ta.selectionEnd = newPos;
 }
 
+let suppressNextInput = false;
+
 function handleEditorShortcut(e){
-  if (!e.altKey) return;
-  // Use e.code (physical key) rather than e.key: on macOS, Option+letter
-  // produces composed characters (e.g. Option+T → "†") at the e.key level,
-  // which would silently fail a character-based check.
-  if (e.code === 'KeyT'){ e.preventDefault(); toggleTodoAtCursor(e.target); }
-  else if (e.code === 'KeyS'){ e.preventDefault(); insertScheduledAtCursor(e.target); }
+  // Require BOTH Control and Alt/Option together. On macOS, Option alone
+  // composes special characters (Option+T → "†", Option+S → "ß") before a
+  // page's own JS can reliably stop it — but Control+Option does not, so
+  // this combo avoids that quirk entirely rather than fighting it.
+  if (!(e.ctrlKey && e.altKey)) return;
+  if (e.code === 'KeyT'){
+    e.preventDefault();
+    suppressNextInput = true;
+    toggleTodoAtCursor(e.target);
+  } else if (e.code === 'KeyS'){
+    e.preventDefault();
+    suppressNextInput = true;
+    insertScheduledAtCursor(e.target);
+  }
+}
+
+function handleEditorBeforeInput(e){
+  // Belt-and-suspenders: if a browser still tries to insert a character
+  // right after we've already made our own edit above, block it.
+  if (suppressNextInput){
+    e.preventDefault();
+    suppressNextInput = false;
+  }
 }
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-const SHORTCUT_HINT = IS_MAC ? '⌥T toggle todo · ⌥S insert scheduled (today)' : 'alt+t toggle todo · alt+s insert scheduled (today)';
+const SHORTCUT_HINT = IS_MAC ? '⌃⌥T toggle todo · ⌃⌥S insert scheduled (today)' : 'ctrl+alt+t toggle todo · ctrl+alt+s insert scheduled (today)';
 
 async function saveFile(path){
   const content = document.getElementById('editor-area').value;
