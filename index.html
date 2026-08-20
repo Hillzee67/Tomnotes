@@ -251,8 +251,21 @@ function parseOrgFile(path, text){
 }
 
 function todayStr(){
-  const d = new Date();
-  return d.toISOString().slice(0,10);
+  return localDateStr(new Date());
+}
+
+function localDateStr(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function dayLabel(d, offset){
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
+  if (offset === 0) return `Today · ${dateStr}`;
+  if (offset === 1) return `Tomorrow · ${dateStr}`;
+  return dateStr;
 }
 
 /* ---------- agenda ---------- */
@@ -277,11 +290,9 @@ async function refreshAgenda(){
 function renderAgenda(){
   const today = todayStr();
   const open = tasksCache.filter(t => t.state !== 'DONE' && t.state !== 'CANCELLED');
-  const overdue = open.filter(t => (t.deadline && t.deadline < today) || (t.scheduled && t.scheduled < today));
-  const dueToday = open.filter(t => (t.deadline === today || t.scheduled === today) && !overdue.includes(t));
-  const upcoming = open.filter(t => {
+  const overdue = open.filter(t => {
     const d = t.deadline || t.scheduled;
-    return d && d > today;
+    return d && d < today;
   });
   const unscheduled = open.filter(t => !t.scheduled && !t.deadline);
 
@@ -290,30 +301,48 @@ function renderAgenda(){
     main.innerHTML = `<h1><span class="star">*</span> agenda</h1><div class="empty">Not connected yet — head to the Settings tab and add your repo details.</div>`;
     return;
   }
+
+  let days = '';
+  const base = new Date();
+  base.setHours(0,0,0,0);
+  for (let i = 0; i <= 7; i++){
+    const d = new Date(base);
+    d.setDate(base.getDate() + i);
+    const key = localDateStr(d);
+    const dayTasks = open.filter(t => t.scheduled === key || t.deadline === key);
+    days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks);
+  }
+
   main.innerHTML = `<h1><span class="star">*</span> agenda</h1>` +
     group('overdue', 'Overdue', overdue) +
-    group('today', 'Today', dueToday) +
-    group('upcoming', 'Upcoming', upcoming) +
+    days +
     group('unscheduled', 'Unscheduled', unscheduled) +
     `<div class="row" style="margin-top:16px;">
        <button class="ghost" onclick="refreshAgenda()">↻ refresh</button>
      </div>`;
 }
 
+function taskRow(t, cls){
+  const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
+  const idx = tasksCache.indexOf(t);
+  return `<div class="task ${cls}">
+    <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
+    <div class="body">
+      <div class="title">${escapeHtml(t.title)}</div>
+      <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}</div>
+    </div>
+  </div>`;
+}
+
 function group(cls, label, items){
   if (!items.length) return '';
-  const rows = items.map(t => {
-    const date = t.deadline || t.scheduled;
-    const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
-    const idx = tasksCache.indexOf(t);
-    return `<div class="task ${cls}">
-      <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
-      <div class="body">
-        <div class="title">${escapeHtml(t.title)}</div>
-        <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}</div>
-      </div>
-    </div>`;
-  }).join('');
+  return `<section class="group ${cls}"><h2>${label}</h2>${items.map(t => taskRow(t, cls)).join('')}</section>`;
+}
+
+function dayGroup(cls, label, items){
+  const rows = items.length
+    ? items.map(t => taskRow(t, cls)).join('')
+    : `<div class="empty" style="padding:4px 2px;">nothing scheduled</div>`;
   return `<section class="group ${cls}"><h2>${label}</h2>${rows}</section>`;
 }
 
