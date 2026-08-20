@@ -110,6 +110,28 @@
   }
   .editor-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;}
   .editor-topbar .name{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); word-break:break-all;}
+  .outline-node{}
+  .outline-row{
+    display:flex; align-items:center; gap:7px; padding:7px 6px; border-radius:6px; cursor:pointer;
+  }
+  .outline-row:active{background:var(--panel);}
+  .caret{
+    flex-shrink:0; width:18px; height:18px; background:transparent; border:none; color:var(--text-dim);
+    font-size:11px; cursor:pointer; padding:0;
+  }
+  .caret-empty{width:18px; display:inline-block;}
+  .outline-title{font-size:13.5px; flex:1; min-width:0; overflow-wrap:anywhere;}
+  .outline-date{font-family:var(--mono); font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
+  .badge{
+    font-family:var(--mono); font-size:9.5px; font-weight:600; letter-spacing:.04em;
+    padding:2px 5px; border-radius:4px; flex-shrink:0;
+  }
+  .badge-TODO{background:rgba(217,180,106,.15); color:var(--gold);}
+  .badge-NEXT{background:rgba(217,180,106,.15); color:var(--gold);}
+  .badge-WAITING{background:rgba(181,83,60,.15); color:var(--rust);}
+  .badge-DONE{background:rgba(127,168,111,.15); color:var(--accent);}
+  .badge-CANCELLED{background:rgba(141,138,128,.15); color:var(--text-dim);}
+  .outline-children{border-left:1px solid var(--line); margin-left:9px;}
   footer.modeline{
     position:fixed; left:0; right:0; bottom:0; z-index:5;
     font-family:var(--mono); font-size:11px; color:var(--text-dim);
@@ -352,21 +374,129 @@ async function createFile(){
   }
 }
 
+let editorView = 'outline';       // 'outline' | 'raw'
+let outlineCollapsed = new Set(); // keys like "path::lineIndex"
+
 async function openFile(path){
   const main = document.getElementById('main');
   main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div><div class="empty">loading…</div>`;
   document.getElementById('ml-buffer').textContent = path.split('/').pop();
+  editorView = 'outline';
+  outlineCollapsed = new Set();
   try{
     const {content, sha} = await ghGetFile(path);
     fileCache[path] = {content, sha};
-    main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>
-      <div class="empty" style="margin-bottom:8px;">${SHORTCUT_HINT}</div>
-      <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
-    document.getElementById('editor-area').addEventListener('keydown', handleEditorShortcut);
-    document.getElementById('editor-area').addEventListener('beforeinput', handleEditorBeforeInput);
+    renderEditorPane(path);
   }catch(e){
     main.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
   }
+}
+
+function renderEditorPane(path){
+  const main = document.getElementById('main');
+  const content = fileCache[path].content;
+  const toggle = `
+    <div class="row" style="margin:0 0 10px 0;">
+      <button class="${editorView==='outline'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','outline')">outline</button>
+      <button class="${editorView==='raw'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','raw')">raw</button>
+    </div>`;
+  if (editorView === 'outline'){
+    const tree = buildOutlineTree(content);
+    const body = tree.length
+      ? renderOutlineNodes(tree, path)
+      : `<div class="empty">No headlines yet — switch to raw and add one, e.g. "* TODO something".</div>`;
+    main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div>${toggle}<div class="outline">${body}</div>`;
+  } else {
+    main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>${toggle}
+      <div class="empty" style="margin-bottom:8px;">${SHORTCUT_HINT}</div>
+      <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
+    const ta = document.getElementById('editor-area');
+    ta.addEventListener('keydown', handleEditorShortcut);
+    ta.addEventListener('beforeinput', handleEditorBeforeInput);
+    if (window._jumpToLine !== undefined){
+      const offset = lineIndexToOffset(content, window._jumpToLine);
+      ta.focus();
+      ta.setSelectionRange(offset, offset + (content.split('\n')[window._jumpToLine] || '').length);
+      const lineHeight = 20;
+      ta.scrollTop = Math.max(0, window._jumpToLine * lineHeight - 60);
+      window._jumpToLine = undefined;
+    }
+  }
+}
+
+function switchEditorView(path, view){
+  editorView = view;
+  renderEditorPane(path);
+}
+
+/* ---------- outline tree ---------- */
+function buildOutlineTree(content){
+  const lines = content.split('\n');
+  const root = {level: 0, children: []};
+  const stack = [root];
+  for (let i=0; i<lines.length; i++){
+    const m = lines[i].match(HEADLINE_RE);
+    if (!m) continue;
+    const level = m[1].length;
+    const state = m[2] || null;
+    const title = (m[4] || '').trim();
+    let scheduled = null, deadline = null;
+    if (lines[i+1]){
+      let dm; DATE_RE.lastIndex = 0;
+      while ((dm = DATE_RE.exec(lines[i+1])) !== null){
+        if (dm[1] === 'SCHEDULED') scheduled = dm[2];
+        if (dm[1] === 'DEADLINE') deadline = dm[2];
+      }
+    }
+    const node = {level, state, title, scheduled, deadline, lineIndex: i, children: []};
+    while (stack.length && stack[stack.length-1].level >= level) stack.pop();
+    stack[stack.length-1].children.push(node);
+    stack.push(node);
+  }
+  return root.children;
+}
+
+function renderOutlineNodes(nodes, path){
+  return nodes.map(n => {
+    const key = path + '::' + n.lineIndex;
+    const collapsed = outlineCollapsed.has(key);
+    const hasChildren = n.children.length > 0;
+    const caret = hasChildren
+      ? `<button class="caret" onclick="event.stopPropagation();toggleOutlineNode('${key.replace(/'/g,"\\'")}','${path.replace(/'/g,"\\'")}')">${collapsed ? '▸' : '▾'}</button>`
+      : `<span class="caret caret-empty"></span>`;
+    const stateBadge = n.state ? `<span class="badge badge-${n.state}">${n.state}</span>` : '';
+    const dateLabel = n.deadline ? `deadline ${n.deadline}` : (n.scheduled ? `scheduled ${n.scheduled}` : '');
+    const indent = (n.level - 1) * 18;
+    const childrenHtml = hasChildren && !collapsed ? `<div class="outline-children">${renderOutlineNodes(n.children, path)}</div>` : '';
+    return `<div class="outline-node" style="margin-left:${indent}px;">
+      <div class="outline-row" onclick="jumpToLine('${path.replace(/'/g,"\\'")}', ${n.lineIndex})">
+        ${caret}
+        ${stateBadge}
+        <span class="outline-title">${escapeHtml(n.title) || '<span class=\"empty\" style=\"display:inline\">(untitled)</span>'}</span>
+        ${dateLabel ? `<span class="outline-date">${dateLabel}</span>` : ''}
+      </div>
+      ${childrenHtml}
+    </div>`;
+  }).join('');
+}
+
+function toggleOutlineNode(key, path){
+  if (outlineCollapsed.has(key)) outlineCollapsed.delete(key);
+  else outlineCollapsed.add(key);
+  renderEditorPane(path);
+}
+
+function lineIndexToOffset(content, lineIndex){
+  const lines = content.split('\n');
+  let offset = 0;
+  for (let i=0; i<lineIndex; i++) offset += lines[i].length + 1;
+  return offset;
+}
+
+function jumpToLine(path, lineIndex){
+  window._jumpToLine = lineIndex;
+  editorView = 'raw';
+  renderEditorPane(path);
 }
 
 /* ---------- editor keyboard shortcuts ---------- */
