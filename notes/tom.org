@@ -1,10 +1,11 @@
 * Tomorg
 ** Tasks
-*** DONE Test my app
-SCHEDULED: <2026-08-20 Thu>
 *** TODO Agenda test 
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Setup the PA for Book Week 
 SCHEDULED: <2026-08-21 Fri>
+** Completed Tasks
+*** DONE Test my app
+SCHEDULED: <2026-08-20 Thu>
 ** Notes
 
