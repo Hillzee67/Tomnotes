@@ -4,6 +4,8 @@
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Setup the PA for Book Week 
 SCHEDULED: <2026-08-21 Fri>
+*** TODO prune the frangapanis
+SCHEDULED: <2026-08-21 Fri>
 ** Completed Tasks
 *** DONE Test my app
 SCHEDULED: <2026-08-20 Thu>
