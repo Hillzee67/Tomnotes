@@ -1,6 +1,6 @@
 * Tomorg
 ** Tasks
-*** TODO Agenda test 
+*** DONE Agenda test 
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Setup the PA for Book Week 
 SCHEDULED: <2026-08-21 Fri>
