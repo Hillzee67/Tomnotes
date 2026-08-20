@@ -1,5 +1,7 @@
 * Tomorg
 ** Tasks
+*** TODO work on a device to atke on the trip
+SCHEDULED: <2026-08-21 Fri>
 *** TODO Take a photo of the garden and email to workpower
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Setup the PA for Book Week 
