@@ -405,6 +405,7 @@ async function createFile(){
 
 let editorView = 'outline';       // 'outline' | 'raw'
 let outlineCollapsed = new Set(); // keys like "path::lineIndex"
+let hideDoneItems = false;
 
 async function openFile(path){
   const main = document.getElementById('main');
@@ -428,12 +429,14 @@ function renderEditorPane(path){
     <div class="row" style="margin:0 0 10px 0;">
       <button class="${editorView==='outline'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','outline')">outline</button>
       <button class="${editorView==='raw'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','raw')">raw</button>
+      ${editorView==='outline' ? `<button class="ghost" onclick="toggleHideDone('${path.replace(/'/g,"\\'")}')">${hideDoneItems ? 'show done' : 'hide done'}</button>` : ''}
     </div>`;
   if (editorView === 'outline'){
-    const tree = buildOutlineTree(content);
+    let tree = buildOutlineTree(content);
+    if (hideDoneItems) tree = filterDoneNodes(tree);
     const body = tree.length
       ? renderOutlineNodes(tree, path)
-      : `<div class="empty">No headlines yet — switch to raw and add one, e.g. "* TODO something".</div>`;
+      : `<div class="empty">${hideDoneItems ? 'Nothing left to show — everything here is done.' : 'No headlines yet — switch to raw and add one, e.g. "* TODO something".'}</div>`;
     main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div>${toggle}<div class="outline">${body}</div>`;
   } else {
     main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>${toggle}
@@ -456,6 +459,17 @@ function renderEditorPane(path){
 function switchEditorView(path, view){
   editorView = view;
   renderEditorPane(path);
+}
+
+function toggleHideDone(path){
+  hideDoneItems = !hideDoneItems;
+  renderEditorPane(path);
+}
+
+function filterDoneNodes(nodes){
+  return nodes
+    .filter(n => n.state !== 'DONE' && n.state !== 'CANCELLED')
+    .map(n => ({...n, children: filterDoneNodes(n.children)}));
 }
 
 /* ---------- outline tree ---------- */
