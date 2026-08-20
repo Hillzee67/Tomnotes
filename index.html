@@ -555,9 +555,9 @@ function currentLineBounds(ta){
 function toggleTodoAtCursor(ta){
   const {val, lineStart, lineEnd} = currentLineBounds(ta);
   let line = val.slice(lineStart, lineEnd);
-  const m = line.match(/^(\*+\s+)(TODO|DONE)?\s?(.*)$/);
+  const m = line.match(/^(\***+\s+)(TODO|DONE)?\s?(.*)$/);
   if (!m){
-    line = '*** TODO ' + line;
+    line = '* TODO ' + line;
   } else {
     const stars = m[1], kw = m[2], rest = m[3];
     const next = !kw ? 'TODO ' : (kw === 'TODO' ? 'DONE ' : '');
