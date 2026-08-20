@@ -392,7 +392,7 @@ async function createFile(){
   const name = prompt('New file name (e.g. projects.org):');
   if (!name) return;
   const path = settings.notesPath + '/' + name.replace(/^\/+/, '');
-  const template = `*** TODO \n`; // alt+t to cycle TODO/DONE, alt+s to insert SCHEDULED once you're editing
+  const template = `* TODO \n`; // alt+t to cycle TODO/DONE, alt+s to insert SCHEDULED once you're editing
   setStatus('busy', 'creating…');
   try{
     await ghPutFile(path, template, null, `Create ${path}`);
