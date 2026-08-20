@@ -440,11 +440,15 @@ function renderEditorPane(path){
     main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div>${toggle}<div class="outline">${body}</div>`;
   } else {
     main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="primary" onclick="saveFile('${path.replace(/'/g,"\\'")}')">save</button></div>${toggle}
-      <div class="empty" style="margin-bottom:8px;">${SHORTCUT_HINT}</div>
+      <div class="row" style="margin-bottom:8px;">
+        <div class="empty" style="padding:0;">${SHORTCUT_HINT}</div>
+        <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
+      </div>
       <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
     const ta = document.getElementById('editor-area');
     ta.addEventListener('keydown', handleEditorShortcut);
     ta.addEventListener('beforeinput', handleEditorBeforeInput);
+    ta.addEventListener('input', handleEditorInput);
     if (window._jumpToLine !== undefined){
       const offset = lineIndexToOffset(content, window._jumpToLine);
       ta.focus();
@@ -569,15 +573,61 @@ function toggleTodoAtCursor(ta){
   ta.selectionStart = ta.selectionEnd = newPos;
 }
 
-function insertScheduledAtCursor(ta){
+function insertScheduledAtCursor(ta, date){
   const {val, lineEnd} = currentLineBounds(ta);
-  const d = new Date();
+  const d = date || new Date();
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const iso = d.toISOString().slice(0,10);
+  const iso = localDateStr(d); // local date, not UTC — see todayStr() note above
   const insertion = `\nSCHEDULED: <${iso} ${days[d.getDay()]}>`;
   ta.value = val.slice(0, lineEnd) + insertion + val.slice(lineEnd);
   const newPos = lineEnd + insertion.length;
   ta.selectionStart = ta.selectionEnd = newPos;
+}
+
+function openDatePicker(){
+  const ta = document.getElementById('editor-area');
+  if (!ta) return;
+  const input = document.createElement('input');
+  input.type = 'date';
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  input.style.pointerEvents = 'none';
+  input.style.left = '50%';
+  input.style.top = '0';
+  document.body.appendChild(input);
+  const cleanup = () => { if (input.parentNode) document.body.removeChild(input); };
+  input.addEventListener('change', () => {
+    if (input.value){
+      const [y, m, d] = input.value.split('-').map(Number);
+      insertScheduledAtCursor(ta, new Date(y, m - 1, d));
+      ta.focus();
+    }
+    cleanup();
+  });
+  input.addEventListener('blur', () => setTimeout(cleanup, 200));
+  if (input.showPicker) input.showPicker();
+  else input.click();
+}
+
+// If the date digits in a SCHEDULED/DEADLINE timestamp are edited by hand,
+// keep the weekday abbreviation next to them in sync automatically.
+function fixTimestampWeekdays(text){
+  return text.replace(/<(\d{4})-(\d{2})-(\d{2}) (\w{3})/g, (match, y, m, d) => {
+    const dt = new Date(Number(y), Number(m) - 1, Number(d));
+    if (isNaN(dt.getTime())) return match;
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return `<${y}-${m}-${d} ${days[dt.getDay()]}`;
+  });
+}
+
+function handleEditorInput(e){
+  const ta = e.target;
+  const fixed = fixTimestampWeekdays(ta.value);
+  if (fixed !== ta.value){
+    const pos = ta.selectionStart; // safe to restore as-is: replacement is always the same length (3-letter code)
+    ta.value = fixed;
+    ta.selectionStart = ta.selectionEnd = pos;
+  }
 }
 
 let suppressNextInput = false;
