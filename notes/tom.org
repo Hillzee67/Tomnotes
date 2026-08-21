@@ -1,19 +1,19 @@
 * Tomorg
 ** Tasks
-*** TODO work on a device to atke on the trip
+*** TODO work on a device to take on the trip
 SCHEDULED: <2026-08-21 Fri>
-*** TODO Take a photo of the garden and email to workpower
-SCHEDULED: <2026-08-21 Fri>
-*** DONE Setup the PA for Book Week 
+*** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-08-21 Fri>
 *** TODO prune the frangapanis
 SCHEDULED: <2026-08-21 Fri>
-*** TODO Rembember to weigh yourself
+*** TODO Rembmember to weigh yourself
 SCHEDULED: <2026-08-22 Sat>
 ** Completed Tasks
 *** DONE Agenda test 
 SCHEDULED: <2026-08-21 Fri>
 *** DONE Test my app
 SCHEDULED: <2026-08-20 Thu>
+*** DONE Setup the PA for Book Week 
+SCHEDULED: <2026-08-21 Fri>
 ** Notes
 
