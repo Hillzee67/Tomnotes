@@ -3,7 +3,7 @@
 *** TODO work on a device to take on the trip
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Take a photo of the garden and email to work power
-SCHEDULED: <2026-08-21 Fri>
+SCHEDULED: <2026-08-27 Thu>
 *** TODO prune the frangipanis
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Remember to weigh yourself
