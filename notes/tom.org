@@ -4,7 +4,7 @@
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Take a photo of the garden and email to workpower
 SCHEDULED: <2026-08-21 Fri>
-*** TODO Setup the PA for Book Week 
+*** DONE Setup the PA for Book Week 
 SCHEDULED: <2026-08-21 Fri>
 *** TODO prune the frangapanis
 SCHEDULED: <2026-08-21 Fri>
