@@ -1,5 +1,7 @@
 * Tomorg
 ** Tasks
+*** TODO Finish off the planning document.
+SCHEDULED: <2026-08-24 Mon>
 *** TODO work on a device to take on the trip
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Take a photo of the garden and email to work power
