@@ -10,6 +10,10 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
 <style>
   :root{
     --bg: #1b1d1e;
@@ -110,6 +114,20 @@
   }
   .editor-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;}
   .editor-topbar .name{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); word-break:break-all;}
+  .CodeMirror{
+    height:52vh; min-height:320px;
+    background:var(--panel); color:var(--text);
+    font-family:var(--mono); font-size:13px; line-height:1.55;
+    border:1px solid var(--line); border-radius:8px;
+  }
+  .CodeMirror-gutters{background:var(--panel); border-right:1px solid var(--line);}
+  .CodeMirror-foldgutter{width:16px;}
+  .CodeMirror-foldgutter-open:after{content:"▾"; color:var(--text-dim); cursor:pointer; padding-left:2px;}
+  .CodeMirror-foldgutter-folded:after{content:"▸"; color:var(--accent); cursor:pointer; padding-left:2px;}
+  .CodeMirror-cursor{border-left:1.5px solid var(--accent);}
+  .CodeMirror-selected{background:rgba(127,168,111,.25) !important;}
+  .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{color:var(--text);}
+  .cm-searching{background:rgba(217,180,106,.25);}
   .outline-node{}
   .outline-row{
     display:flex; align-items:center; gap:7px; padding:7px 6px; border-radius:6px; cursor:pointer;
@@ -406,6 +424,8 @@ async function createFile(){
 let editorView = 'outline';       // 'outline' | 'raw'
 let outlineCollapsed = new Set(); // keys like "path::lineIndex"
 let hideDoneItems = false;
+let cmInstance = null;
+let suppressAutoFix = false;
 
 async function openFile(path){
   const main = document.getElementById('main');
@@ -413,6 +433,7 @@ async function openFile(path){
   document.getElementById('ml-buffer').textContent = path.split('/').pop();
   editorView = 'outline';
   outlineCollapsed = new Set();
+  cmInstance = null;
   try{
     const {content, sha} = await ghGetFile(path);
     fileCache[path] = {content, sha};
@@ -444,20 +465,65 @@ function renderEditorPane(path){
         <div class="empty" style="padding:0;">${SHORTCUT_HINT}</div>
         <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
       </div>
-      <textarea id="editor-area">${escapeHtml(content)}</textarea>`;
-    const ta = document.getElementById('editor-area');
-    ta.addEventListener('keydown', handleEditorShortcut);
-    ta.addEventListener('beforeinput', handleEditorBeforeInput);
-    ta.addEventListener('input', handleEditorInput);
-    if (window._jumpToLine !== undefined){
-      const offset = lineIndexToOffset(content, window._jumpToLine);
-      ta.focus();
-      ta.setSelectionRange(offset, offset + (content.split('\n')[window._jumpToLine] || '').length);
-      const lineHeight = 20;
-      ta.scrollTop = Math.max(0, window._jumpToLine * lineHeight - 60);
-      window._jumpToLine = undefined;
-    }
+      <div id="editor-cm"></div>`;
+    initRawEditor(content);
   }
+}
+
+function initRawEditor(content){
+  cmInstance = CodeMirror(document.getElementById('editor-cm'), {
+    value: content,
+    lineNumbers: false,
+    lineWrapping: true,
+    gutters: ['CodeMirror-foldgutter'],
+    foldGutter: {rangeFinder: orgRangeFinder}
+  });
+  cmInstance.setOption('extraKeys', {
+    'Ctrl-Alt-T': cm => toggleTodoAtCursor(cm),
+    'Ctrl-Alt-S': cm => insertScheduledAtCursor(cm)
+  });
+  cmInstance.on('changes', () => {
+    if (suppressAutoFix) return;
+    const val = cmInstance.getValue();
+    const fixed = fixTimestampWeekdays(val);
+    if (fixed !== val){
+      const cur = cmInstance.getCursor();
+      suppressAutoFix = true;
+      cmInstance.setValue(fixed);
+      cmInstance.setCursor(cur);
+      suppressAutoFix = false;
+    }
+  });
+  if (window._jumpToLine !== undefined){
+    const line = window._jumpToLine;
+    cmInstance.setCursor({line, ch: 0});
+    cmInstance.scrollIntoView({line, ch: 0}, 100);
+    window._jumpToLine = undefined;
+  }
+  setTimeout(() => cmInstance && cmInstance.refresh(), 30);
+}
+
+// Org-style subtree folding: fold everything below a headline down to (but
+// not including) the next headline at the same or a shallower level.
+function orgRangeFinder(cm, start){
+  const startLine = start.line;
+  const lineText = cm.getLine(startLine);
+  const m = lineText.match(/^(\*+)\s/);
+  if (!m) return null;
+  const level = m[1].length;
+  const lastLine = cm.lastLine();
+  let endLine = startLine;
+  for (let i = startLine + 1; i <= lastLine; i++){
+    const t = cm.getLine(i);
+    const mm = t.match(/^(\*+)\s/);
+    if (mm && mm[1].length <= level) break;
+    endLine = i;
+  }
+  if (endLine === startLine) return null;
+  return {
+    from: CodeMirror.Pos(startLine, lineText.length),
+    to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
+  };
 }
 
 function switchEditorView(path, view){
@@ -533,60 +599,40 @@ function toggleOutlineNode(key, path){
   renderEditorPane(path);
 }
 
-function lineIndexToOffset(content, lineIndex){
-  const lines = content.split('\n');
-  let offset = 0;
-  for (let i=0; i<lineIndex; i++) offset += lines[i].length + 1;
-  return offset;
-}
-
 function jumpToLine(path, lineIndex){
   window._jumpToLine = lineIndex;
   editorView = 'raw';
   renderEditorPane(path);
 }
 
-/* ---------- editor keyboard shortcuts ---------- */
-function currentLineBounds(ta){
-  const val = ta.value;
-  const pos = ta.selectionStart;
-  const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
-  let lineEnd = val.indexOf('\n', pos);
-  if (lineEnd === -1) lineEnd = val.length;
-  return {val, lineStart, lineEnd};
-}
-
-function toggleTodoAtCursor(ta){
-  const {val, lineStart, lineEnd} = currentLineBounds(ta);
-  let line = val.slice(lineStart, lineEnd);
+/* ---------- editor keyboard shortcuts (operate on the CodeMirror instance) ---------- */
+function toggleTodoAtCursor(cm){
+  const pos = cm.getCursor();
+  const line = cm.getLine(pos.line);
   const m = line.match(/^(\*+\s+)(TODO|DONE)?\s?(.*)$/);
+  let newLine;
   if (!m){
-    line = '* TODO ' + line;
+    newLine = '* TODO ' + line;
   } else {
     const stars = m[1], kw = m[2], rest = m[3];
     const next = !kw ? 'TODO ' : (kw === 'TODO' ? 'DONE ' : '');
-    line = stars + next + rest;
+    newLine = stars + next + rest;
   }
-  const newVal = val.slice(0, lineStart) + line + val.slice(lineEnd);
-  ta.value = newVal;
-  const newPos = lineStart + line.length;
-  ta.selectionStart = ta.selectionEnd = newPos;
+  cm.replaceRange(newLine, {line: pos.line, ch: 0}, {line: pos.line, ch: line.length});
 }
 
-function insertScheduledAtCursor(ta, date){
-  const {val, lineEnd} = currentLineBounds(ta);
+function insertScheduledAtCursor(cm, date){
+  const pos = cm.getCursor();
+  const lineLen = cm.getLine(pos.line).length;
   const d = date || new Date();
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const iso = localDateStr(d); // local date, not UTC — see todayStr() note above
   const insertion = `\nSCHEDULED: <${iso} ${days[d.getDay()]}>`;
-  ta.value = val.slice(0, lineEnd) + insertion + val.slice(lineEnd);
-  const newPos = lineEnd + insertion.length;
-  ta.selectionStart = ta.selectionEnd = newPos;
+  cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
 }
 
 function openDatePicker(){
-  const ta = document.getElementById('editor-area');
-  if (!ta) return;
+  if (!cmInstance) return;
   const input = document.createElement('input');
   input.type = 'date';
   input.style.position = 'fixed';
@@ -599,8 +645,8 @@ function openDatePicker(){
   input.addEventListener('change', () => {
     if (input.value){
       const [y, m, d] = input.value.split('-').map(Number);
-      insertScheduledAtCursor(ta, new Date(y, m - 1, d));
-      ta.focus();
+      insertScheduledAtCursor(cmInstance, new Date(y, m - 1, d));
+      cmInstance.focus();
     }
     cleanup();
   });
@@ -620,49 +666,13 @@ function fixTimestampWeekdays(text){
   });
 }
 
-function handleEditorInput(e){
-  const ta = e.target;
-  const fixed = fixTimestampWeekdays(ta.value);
-  if (fixed !== ta.value){
-    const pos = ta.selectionStart; // safe to restore as-is: replacement is always the same length (3-letter code)
-    ta.value = fixed;
-    ta.selectionStart = ta.selectionEnd = pos;
-  }
-}
-
-let suppressNextInput = false;
-
-function handleEditorShortcut(e){
-  // Require BOTH Control and Alt/Option together. On macOS, Option alone
-  // composes special characters (Option+T → "†", Option+S → "ß") before a
-  // page's own JS can reliably stop it — but Control+Option does not, so
-  // this combo avoids that quirk entirely rather than fighting it.
-  if (!(e.ctrlKey && e.altKey)) return;
-  if (e.code === 'KeyT'){
-    e.preventDefault();
-    suppressNextInput = true;
-    toggleTodoAtCursor(e.target);
-  } else if (e.code === 'KeyS'){
-    e.preventDefault();
-    suppressNextInput = true;
-    insertScheduledAtCursor(e.target);
-  }
-}
-
-function handleEditorBeforeInput(e){
-  // Belt-and-suspenders: if a browser still tries to insert a character
-  // right after we've already made our own edit above, block it.
-  if (suppressNextInput){
-    e.preventDefault();
-    suppressNextInput = false;
-  }
-}
-
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-const SHORTCUT_HINT = IS_MAC ? '⌃⌥T toggle todo · ⌃⌥S insert scheduled (today)' : 'ctrl+alt+t toggle todo · ctrl+alt+s insert scheduled (today)';
+const SHORTCUT_HINT = IS_MAC
+  ? '⌃⌥T toggle todo · ⌃⌥S insert scheduled · tap ▸ in the margin to fold'
+  : 'ctrl+alt+t toggle todo · ctrl+alt+s insert scheduled · tap ▸ in the margin to fold';
 
 async function saveFile(path){
-  const content = document.getElementById('editor-area').value;
+  const content = cmInstance ? cmInstance.getValue() : (fileCache[path] ? fileCache[path].content : '');
   const cached = fileCache[path];
   setStatus('busy', 'saving…');
   try{
