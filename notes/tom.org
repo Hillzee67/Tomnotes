@@ -7,7 +7,7 @@ SCHEDULED: <2026-08-21 Fri>
 *** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-08-27 Thu>
 *** DONE prune the frangipanis
-SCHEDULED: <2026-08-21 Fri>
+SCHEDULED: <2026-08-22 Sat>
 *** TODO Remember to weigh yourself
 SCHEDULED: <2026-08-23 Sun>
 ** Completed Tasks
