@@ -571,7 +571,7 @@ function buildOutlineTree(content){
 
 function renderOutlineNodes(nodes, path){
   return nodes.map(n => {
-    const key = path + '::' + n.lineIndex;
+    const key = path + '::' + n.level + '::' + n.title;
     const collapsed = outlineCollapsed.has(key);
     const hasChildren = n.children.length > 0;
     const caret = hasChildren
