@@ -1,6 +1,6 @@
 * Tomorg
 ** Tasks
-*** TODO Get the shopping done
+*** DONE Get the shopping done
 SCHEDULED: <2026-08-22 Sat>
 *** TODO Finish off the planning document.
 SCHEDULED: <2026-08-24 Mon>
