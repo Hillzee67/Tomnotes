@@ -9,7 +9,7 @@ SCHEDULED: <2026-08-27 Thu>
 *** DONE prune the frangipanis
 SCHEDULED: <2026-08-21 Fri>
 *** TODO Remember to weigh yourself
-SCHEDULED: <2026-08-22 Sat>
+SCHEDULED: <2026-08-23 Sun>
 ** Completed Tasks
 *** DONE Agenda test 
 SCHEDULED: <2026-08-21 Fri>
