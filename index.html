@@ -534,7 +534,6 @@ function initRawEditor(content, path){
   });
   cmInstance.setOption('extraKeys', {
     'Ctrl-Alt-T': cm => toggleTodoAtCursor(cm),
-    'Ctrl-Alt-S': cm => insertScheduledAtCursor(cm),
     'Ctrl-Alt-E': cm => insertEventAtCursor(cm)
   });
   cmInstance.on('changes', () => {
@@ -797,8 +796,8 @@ function fixTimestampWeekdaysInEditor(cm){
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 const SHORTCUT_HINT = IS_MAC
-  ? '⌃⌥T toggle todo · ⌃⌥S scheduled · ⌃⌥E event · tap ▸ to fold'
-  : 'ctrl+alt+t toggle todo · ctrl+alt+s scheduled · ctrl+alt+e event · tap ▸ to fold';
+  ? '⌃⌥T toggle todo · ⌃⌥E event · 📅 pick date for scheduled · tap ▸ to fold'
+  : 'ctrl+alt+t toggle todo · ctrl+alt+e event · 📅 pick date for scheduled · tap ▸ to fold';
 
 async function saveFile(path){
   const content = cmInstance ? cmInstance.getValue() : (fileCache[path] ? fileCache[path].content : '');
