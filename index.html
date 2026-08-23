@@ -414,7 +414,7 @@ async function createFile(){
   const name = prompt('New file name (e.g. projects.org):');
   if (!name) return;
   const path = settings.notesPath + '/' + name.replace(/^\/+/, '');
-  const template = `* TODO \n`; // alt+t to cycle TODO/DONE, alt+s to insert SCHEDULED once you're editing
+  const template = `*** TODO \n`; // ctrl+alt+t to cycle TODO/DONE, ctrl+alt+s to insert SCHEDULED once you're editing
   setStatus('busy', 'creating…');
   try{
     await ghPutFile(path, template, null, `Create ${path}`);
@@ -469,7 +469,7 @@ function renderEditorPane(path){
         <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
       </div>
       <div id="editor-cm"></div>`;
-    initRawEditor(content);
+    initRawEditor(content, path);
   }
 }
 
@@ -498,7 +498,7 @@ CodeMirror.defineMode('org-highlight', function(){
   };
 });
 
-function initRawEditor(content){
+function initRawEditor(content, path){
   cmInstance = CodeMirror(document.getElementById('editor-cm'), {
     value: content,
     mode: 'org-highlight',
@@ -513,23 +513,56 @@ function initRawEditor(content){
   });
   cmInstance.on('changes', () => {
     if (suppressAutoFix) return;
-    const val = cmInstance.getValue();
-    const fixed = fixTimestampWeekdays(val);
-    if (fixed !== val){
-      const cur = cmInstance.getCursor();
-      suppressAutoFix = true;
-      cmInstance.setValue(fixed);
-      cmInstance.setCursor(cur);
-      suppressAutoFix = false;
-    }
+    suppressAutoFix = true;
+    fixTimestampWeekdaysInEditor(cmInstance);
+    applyPersistedFolds(cmInstance, path);
+    suppressAutoFix = false;
   });
+  cmInstance.on('fold', (cm, from) => recordFoldChange(cm, path, from.line, true));
+  cmInstance.on('unfold', (cm, from) => recordFoldChange(cm, path, from.line, false));
   if (window._jumpToLine !== undefined){
     const line = window._jumpToLine;
     cmInstance.setCursor({line, ch: 0});
     cmInstance.scrollIntoView({line, ch: 0}, 100);
     window._jumpToLine = undefined;
   }
-  setTimeout(() => cmInstance && cmInstance.refresh(), 30);
+  setTimeout(() => {
+    if (!cmInstance) return;
+    cmInstance.refresh();
+    applyPersistedFolds(cmInstance, path);
+  }, 30);
+}
+
+// Identify a headline by level+title (same convention Outline view uses)
+// rather than by line number, so it stays matched even as the file above
+// it changes length.
+function headlineKeyAtLine(cm, path, lineIndex){
+  const line = cm.getLine(lineIndex);
+  const m = line.match(/^(\*+)\s+(?:TODO|NEXT|WAITING|DONE|CANCELLED)?\s?(.*)$/);
+  if (!m) return null;
+  return path + '::' + m[1].length + '::' + m[2].trim();
+}
+
+// Re-fold anything that's supposed to be folded per the persisted set. This
+// is what actually makes folds durable: rather than trusting CodeMirror's
+// internal fold markers to survive edits, we treat the persisted set as the
+// source of truth and re-apply it after every change.
+function applyPersistedFolds(cm, path){
+  const lineCount = cm.lineCount();
+  for (let i = 0; i < lineCount; i++){
+    const key = headlineKeyAtLine(cm, path, i);
+    if (key && outlineCollapsed.has(key)){
+      CodeMirror.foldCode(cm, CodeMirror.Pos(i, 0), {rangeFinder: orgRangeFinder}, 'fold');
+    }
+  }
+}
+
+function recordFoldChange(cm, path, lineIndex, isFolded){
+  const key = headlineKeyAtLine(cm, path, lineIndex);
+  if (!key) return;
+  if (isFolded) outlineCollapsed.add(key);
+  else outlineCollapsed.delete(key);
+  store.set('outline_collapsed', Array.from(outlineCollapsed));
 }
 
 // Org-style subtree folding: fold everything below a headline down to (but
@@ -644,7 +677,7 @@ function toggleTodoAtCursor(cm){
   const m = line.match(/^(\*+\s+)(TODO|DONE)?\s?(.*)$/);
   let newLine;
   if (!m){
-    newLine = '* TODO ' + line;
+    newLine = '*** TODO ' + line;
   } else {
     const stars = m[1], kw = m[2], rest = m[3];
     const next = !kw ? 'TODO ' : (kw === 'TODO' ? 'DONE ' : '');
@@ -688,14 +721,28 @@ function openDatePicker(){
 }
 
 // If the date digits in a SCHEDULED/DEADLINE timestamp are edited by hand,
-// keep the weekday abbreviation next to them in sync automatically.
-function fixTimestampWeekdays(text){
-  return text.replace(/<(\d{4})-(\d{2})-(\d{2}) (\w{3})/g, (match, y, m, d) => {
-    const dt = new Date(Number(y), Number(m) - 1, Number(d));
-    if (isNaN(dt.getTime())) return match;
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    return `<${y}-${m}-${d} ${days[dt.getDay()]}`;
-  });
+// keep the weekday abbreviation next to them in sync automatically. This
+// edits only the mismatched 3-letter span in place (via replaceRange)
+// rather than replacing the whole document, so it never disturbs fold
+// markers elsewhere in the file.
+function fixTimestampWeekdaysInEditor(cm){
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const lineCount = cm.lineCount();
+  for (let i = 0; i < lineCount; i++){
+    const line = cm.getLine(i);
+    const re = /<(\d{4})-(\d{2})-(\d{2}) (\w{3})/g;
+    let m;
+    while ((m = re.exec(line)) !== null){
+      const [full, y, mo, d, dow] = m;
+      const dt = new Date(Number(y), Number(mo) - 1, Number(d));
+      if (isNaN(dt.getTime())) continue;
+      const correct = days[dt.getDay()];
+      if (correct !== dow){
+        const dowStart = m.index + full.length - dow.length;
+        cm.replaceRange(correct, CodeMirror.Pos(i, dowStart), CodeMirror.Pos(i, dowStart + dow.length));
+      }
+    }
+  }
 }
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
