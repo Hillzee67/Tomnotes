@@ -1,9 +1,5 @@
 * Tomorg
 ** Tasks
-*** DONE Sort the green waste pile
-SCHEDULED: <2026-08-23 Sun>
-*** DONE Get the power stuff for the carnival and drop it at school with the Ipad and get my jacket
-SCHEDULED: <2026-08-23 Sun>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-23 Sun>
 *** TODO Finish off the planning document.
@@ -15,6 +11,10 @@ SCHEDULED: <2026-08-27 Thu>
 *** TODO Remember to weigh yourself
 SCHEDULED: <2026-08-24 Mon>
 ** Completed Tasks
+*** DONE Sort the green waste pile
+SCHEDULED: <2026-08-23 Sun>
+*** DONE Get the power stuff for the carnival and drop it at school with the Ipad and get my jacket
+SCHEDULED: <2026-08-23 Sun>
 *** DONE Agenda test 
 SCHEDULED: <2026-08-21 Fri>
 *** DONE Test my app
