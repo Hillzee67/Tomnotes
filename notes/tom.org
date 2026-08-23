@@ -1,5 +1,11 @@
 * Tomorg
 ** Tasks
+*** TODO Work out the plan for Wed re waether
+SCHEDULED: <2026-08-24 Mon>
+*** TODO Send out the student numbers
+SCHEDULED: <2026-08-24 Mon>
+*** TODO Get relief for PA on Wed
+SCHEDULED: <2026-08-24 Mon>
 *** TODO Make lunches
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Start to pack for the trip
@@ -11,7 +17,7 @@ SCHEDULED: <2026-08-24 Mon>
 *** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Remember to weigh yourself
-SCHEDULED: <2026-08-24 Mon>
+SCHEDULED: <2026-08-25 Tue>
 ** Completed Tasks
 *** DONE Sort the green waste pile
 SCHEDULED: <2026-08-23 Sun>
