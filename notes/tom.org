@@ -1,5 +1,7 @@
 * Tomorg
 ** Tasks
+*** TODO Start to pack for the trip
+SCHEDULED: <2026-08-23 Sun>
 *** TODO Finish off the planning document.
 SCHEDULED: <2026-08-24 Mon>
 *** TODO work on a device to take on the trip
