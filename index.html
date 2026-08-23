@@ -79,6 +79,10 @@
     border:1.5px solid var(--accent-dim); cursor:pointer; background:transparent;
   }
   .task .box:active{background:var(--accent-dim);}
+  .task .dot{
+    flex-shrink:0; width:8px; height:8px; margin-top:7px;
+    border-radius:50%; background:var(--gold);
+  }
   .task .body{flex:1; min-width:0;}
   .task .title{font-size:14px; line-height:1.4; word-break:break-word;}
   .task .meta{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:3px;}
@@ -247,27 +251,37 @@ async function listOrgFiles(path){
 /* ---------- org parsing ---------- */
 const HEADLINE_RE = /^(\*+)\s+(TODO|NEXT|WAITING|DONE|CANCELLED)?\s*(?:\[#([A-C])\]\s*)?(.*)$/;
 const DATE_RE = /(SCHEDULED|DEADLINE):\s*<(\d{4}-\d{2}-\d{2})[^>]*>/g;
+const PLAIN_TIMESTAMP_RE = /<(\d{4}-\d{2}-\d{2}) \w{3}(?: (\d{2}:\d{2}))?>/;
 
 function parseOrgFile(path, text){
   const lines = text.split('\n');
   const tasks = [];
   for (let i=0; i<lines.length; i++){
     const m = lines[i].match(HEADLINE_RE);
-    if (!m || !m[2]) continue; // only lines with a TODO-style keyword
-    const state = m[2];
+    if (!m) continue;
+    const state = m[2] || null;
     const priority = m[3] || null;
     const title = m[4].trim();
-    let scheduled = null, deadline = null;
-    // planning info is usually the line right after the headline
-    if (lines[i+1]){
+    const nextLine = lines[i+1] || '';
+
+    if (state){
+      // A task: TODO/NEXT/WAITING/DONE/CANCELLED, dated via SCHEDULED/DEADLINE.
+      let scheduled = null, deadline = null;
       let dm;
       DATE_RE.lastIndex = 0;
-      while ((dm = DATE_RE.exec(lines[i+1])) !== null){
+      while ((dm = DATE_RE.exec(nextLine)) !== null){
         if (dm[1] === 'SCHEDULED') scheduled = dm[2];
         if (dm[1] === 'DEADLINE') deadline = dm[2];
       }
+      tasks.push({file: path, lineIndex: i, type: 'task', state, priority, title, scheduled, deadline});
+    } else {
+      // No keyword — treat a headline with a plain timestamp underneath it
+      // as an event/appointment rather than a task.
+      const tm = nextLine.match(PLAIN_TIMESTAMP_RE);
+      if (tm && title){
+        tasks.push({file: path, lineIndex: i, type: 'event', title, scheduled: tm[1], deadline: null, time: tm[2] || null});
+      }
     }
-    tasks.push({file: path, lineIndex: i, state, priority, title, scheduled, deadline});
   }
   return tasks;
 }
@@ -331,7 +345,8 @@ function renderAgenda(){
     const d = new Date(base);
     d.setDate(base.getDate() + i);
     const key = localDateStr(d);
-    const dayTasks = open.filter(t => t.scheduled === key || t.deadline === key);
+    const dayTasks = open.filter(t => t.scheduled === key || t.deadline === key)
+      .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
     days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks);
   }
 
@@ -347,6 +362,16 @@ function renderAgenda(){
 function taskRow(t, cls){
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
   const idx = tasksCache.indexOf(t);
+  if (t.type === 'event'){
+    const timeLabel = t.time ? `${t.time} · ` : '';
+    return `<div class="task ${cls} event">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="body">
+        <div class="title">${escapeHtml(t.title)}</div>
+        <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span></div>
+      </div>
+    </div>`;
+  }
   return `<div class="task ${cls}">
     <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
     <div class="body">
@@ -509,7 +534,8 @@ function initRawEditor(content, path){
   });
   cmInstance.setOption('extraKeys', {
     'Ctrl-Alt-T': cm => toggleTodoAtCursor(cm),
-    'Ctrl-Alt-S': cm => insertScheduledAtCursor(cm)
+    'Ctrl-Alt-S': cm => insertScheduledAtCursor(cm),
+    'Ctrl-Alt-E': cm => insertEventAtCursor(cm)
   });
   cmInstance.on('changes', () => {
     if (suppressAutoFix) return;
@@ -627,6 +653,10 @@ function buildOutlineTree(content){
         if (dm[1] === 'SCHEDULED') scheduled = dm[2];
         if (dm[1] === 'DEADLINE') deadline = dm[2];
       }
+      if (!scheduled && !deadline && !state){
+        const tm = lines[i+1].match(PLAIN_TIMESTAMP_RE);
+        if (tm) scheduled = tm[1];
+      }
     }
     const node = {level, state, title, scheduled, deadline, lineIndex: i, children: []};
     while (stack.length && stack[stack.length-1].level >= level) stack.pop();
@@ -701,6 +731,21 @@ function insertScheduledAtCursor(cm, date){
   cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
 }
 
+function insertEventAtCursor(cm, date){
+  const pos = cm.getCursor();
+  const line = cm.getLine(pos.line);
+  if (!/^\*+\s/.test(line)){
+    // Not a headline yet — turn this line into one first, level 3 by default.
+    cm.replaceRange('*** ' + line, {line: pos.line, ch: 0}, {line: pos.line, ch: line.length});
+  }
+  const lineLen = cm.getLine(pos.line).length; // re-read: line may have just changed above
+  const d = date || new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const iso = localDateStr(d);
+  const insertion = `\n<${iso} ${days[d.getDay()]}>`;
+  cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
+}
+
 function openDatePicker(){
   if (!cmInstance) return;
   const input = document.createElement('input');
@@ -752,8 +797,8 @@ function fixTimestampWeekdaysInEditor(cm){
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 const SHORTCUT_HINT = IS_MAC
-  ? '⌃⌥T toggle todo · ⌃⌥S insert scheduled · tap ▸ in the margin to fold'
-  : 'ctrl+alt+t toggle todo · ctrl+alt+s insert scheduled · tap ▸ in the margin to fold';
+  ? '⌃⌥T toggle todo · ⌃⌥S scheduled · ⌃⌥E event · tap ▸ to fold'
+  : 'ctrl+alt+t toggle todo · ctrl+alt+s scheduled · ctrl+alt+e event · tap ▸ to fold';
 
 async function saveFile(path){
   const content = cmInstance ? cmInstance.getValue() : (fileCache[path] ? fileCache[path].content : '');
