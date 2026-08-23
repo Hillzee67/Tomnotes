@@ -1,5 +1,7 @@
 * Tomorg
 ** Tasks
+*** TODO Get the power stuff for the carnival and drop it at school with the Ipad and get my jacket
+SCHEDULED: <2026-08-23 Sun>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-23 Sun>
 *** TODO Finish off the planning document.
