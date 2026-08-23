@@ -514,9 +514,14 @@ function initRawEditor(content, path){
   cmInstance.on('changes', () => {
     if (suppressAutoFix) return;
     suppressAutoFix = true;
-    fixTimestampWeekdaysInEditor(cmInstance);
-    applyPersistedFolds(cmInstance, path);
-    suppressAutoFix = false;
+    try{
+      fixTimestampWeekdaysInEditor(cmInstance);
+      applyPersistedFolds(cmInstance, path);
+    }catch(e){
+      console.error('editor auto-fix error:', e);
+    }finally{
+      suppressAutoFix = false;
+    }
   });
   cmInstance.on('fold', (cm, from) => recordFoldChange(cm, path, from.line, true));
   cmInstance.on('unfold', (cm, from) => recordFoldChange(cm, path, from.line, false));
@@ -552,7 +557,7 @@ function applyPersistedFolds(cm, path){
   for (let i = 0; i < lineCount; i++){
     const key = headlineKeyAtLine(cm, path, i);
     if (key && outlineCollapsed.has(key)){
-      CodeMirror.foldCode(cm, CodeMirror.Pos(i, 0), {rangeFinder: orgRangeFinder}, 'fold');
+      cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: orgRangeFinder}, 'fold');
     }
   }
 }
