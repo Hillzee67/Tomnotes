@@ -22,7 +22,8 @@
     --line: #35383a;
     --text: #d8d4c8;
     --text-dim: #8d8a80;
-    --accent: #7fa86f;      /* headline / TODO green */
+    --accent: #7fa86f;      /* headline / DONE green */
+    --blue: #7fb3d9;        /* open / not-yet-completed todos */
     --accent-dim: #5c7a52;
     --gold: #d9b46a;        /* scheduled / today */
     --rust: #b5533c;        /* overdue */
@@ -127,6 +128,8 @@
   .CodeMirror-cursor{border-left:1.5px solid var(--accent);}
   .CodeMirror-selected{background:rgba(127,168,111,.25) !important;}
   .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{color:var(--text);}
+  .cm-todo-open{color:var(--blue); font-weight:600;}
+  .cm-todo-done{color:var(--accent); font-weight:600;}
   .cm-searching{background:rgba(217,180,106,.25);}
   .outline-node{}
   .outline-row{
@@ -139,6 +142,7 @@
   }
   .caret-empty{width:18px; display:inline-block;}
   .outline-title{font-size:13.5px; flex:1; min-width:0; overflow-wrap:anywhere;}
+  .outline-title.todo-open{color:var(--blue);}
   .outline-date{font-family:var(--mono); font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
   .badge{
     font-family:var(--mono); font-size:9.5px; font-weight:600; letter-spacing:.04em;
@@ -422,7 +426,7 @@ async function createFile(){
 }
 
 let editorView = 'outline';       // 'outline' | 'raw'
-let outlineCollapsed = new Set(); // keys like "path::lineIndex"
+let outlineCollapsed = new Set(store.get('outline_collapsed', [])); // keys like "path::level::title", persisted
 let hideDoneItems = false;
 let cmInstance = null;
 let suppressAutoFix = false;
@@ -432,7 +436,6 @@ async function openFile(path){
   main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div><div class="empty">loading…</div>`;
   document.getElementById('ml-buffer').textContent = path.split('/').pop();
   editorView = 'outline';
-  outlineCollapsed = new Set();
   cmInstance = null;
   try{
     const {content, sha} = await ghGetFile(path);
@@ -470,9 +473,35 @@ function renderEditorPane(path){
   }
 }
 
+// Minimal highlighting mode: colors the TODO-state keyword at the start of
+// a headline, leaving everything else as plain text.
+CodeMirror.defineMode('org-highlight', function(){
+  return {
+    startState: function(){ return {headlineMatch: null}; },
+    token: function(stream, state){
+      if (stream.sol()){
+        state.headlineMatch = stream.string.match(/^(\*+\s+)(TODO|NEXT|WAITING|DONE|CANCELLED)?/);
+      }
+      const m = state.headlineMatch;
+      const pos = stream.pos;
+      if (m && pos < m[1].length){
+        stream.pos = m[1].length;
+        return null;
+      }
+      if (m && m[2] && pos === m[1].length){
+        stream.pos = m[1].length + m[2].length;
+        return (m[2] === 'DONE' || m[2] === 'CANCELLED') ? 'todo-done' : 'todo-open';
+      }
+      stream.skipToEnd();
+      return null;
+    }
+  };
+});
+
 function initRawEditor(content){
   cmInstance = CodeMirror(document.getElementById('editor-cm'), {
     value: content,
+    mode: 'org-highlight',
     lineNumbers: false,
     lineWrapping: true,
     gutters: ['CodeMirror-foldgutter'],
@@ -578,6 +607,8 @@ function renderOutlineNodes(nodes, path){
       ? `<button class="caret" onclick="event.stopPropagation();toggleOutlineNode('${key.replace(/'/g,"\\'")}','${path.replace(/'/g,"\\'")}')">${collapsed ? '▸' : '▾'}</button>`
       : `<span class="caret caret-empty"></span>`;
     const stateBadge = n.state ? `<span class="badge badge-${n.state}">${n.state}</span>` : '';
+    const isOpen = n.state === 'TODO' || n.state === 'NEXT' || n.state === 'WAITING';
+    const titleClass = isOpen ? 'outline-title todo-open' : 'outline-title';
     const dateLabel = n.deadline ? `deadline ${n.deadline}` : (n.scheduled ? `scheduled ${n.scheduled}` : '');
     const indent = (n.level - 1) * 18;
     const childrenHtml = hasChildren && !collapsed ? `<div class="outline-children">${renderOutlineNodes(n.children, path)}</div>` : '';
@@ -585,7 +616,7 @@ function renderOutlineNodes(nodes, path){
       <div class="outline-row" onclick="jumpToLine('${path.replace(/'/g,"\\'")}', ${n.lineIndex})">
         ${caret}
         ${stateBadge}
-        <span class="outline-title">${escapeHtml(n.title) || '<span class=\"empty\" style=\"display:inline\">(untitled)</span>'}</span>
+        <span class="${titleClass}">${escapeHtml(n.title) || '<span class=\"empty\" style=\"display:inline\">(untitled)</span>'}</span>
         ${dateLabel ? `<span class="outline-date">${dateLabel}</span>` : ''}
       </div>
       ${childrenHtml}
@@ -596,6 +627,7 @@ function renderOutlineNodes(nodes, path){
 function toggleOutlineNode(key, path){
   if (outlineCollapsed.has(key)) outlineCollapsed.delete(key);
   else outlineCollapsed.add(key);
+  store.set('outline_collapsed', Array.from(outlineCollapsed));
   renderEditorPane(path);
 }
 
