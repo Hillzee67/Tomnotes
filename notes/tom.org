@@ -18,6 +18,7 @@ SCHEDULED: <2026-08-24 Mon>
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Remember to weigh yourself
 SCHEDULED: <2026-08-25 Tue>
+** Events
 ** Completed Tasks
 *** DONE Sort the green waste pile
 SCHEDULED: <2026-08-23 Sun>
