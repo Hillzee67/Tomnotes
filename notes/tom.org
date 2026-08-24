@@ -6,7 +6,7 @@ SCHEDULED: <2026-08-24 Mon>
 SCHEDULED: <2026-08-27 Thu>
 *** DONE Send out the student numbers
 SCHEDULED: <2026-08-24 Mon>
-*** TODO Get relief for PA on Wed
+*** DONE Get relief for PA on Wed
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Make lunches
 SCHEDULED: <2026-08-24 Mon>
