@@ -12,7 +12,7 @@ SCHEDULED: <2026-08-24 Mon>
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-24 Mon>
-*** TODO Finish off the planning document.
+*** DONE Finish off the planning document.
 SCHEDULED: <2026-08-24 Mon>
 *** TODO work on a device to take on the trip
 SCHEDULED: <2026-08-24 Mon>
