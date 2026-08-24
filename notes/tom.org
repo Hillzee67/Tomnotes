@@ -4,7 +4,7 @@
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
-*** TODO Send out the student numbers
+*** DONE Send out the student numbers
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Get relief for PA on Wed
 SCHEDULED: <2026-08-24 Mon>
