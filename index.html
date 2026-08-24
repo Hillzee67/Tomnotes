@@ -872,6 +872,15 @@ function setStatus(kind, msg){
 /* ---------- boot ---------- */
 if ('serviceWorker' in navigator){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  // As soon as a newly-deployed service worker takes over, reload once so
+  // this tab is guaranteed to be running the current version — no more
+  // needing to manually close/reopen the app or clear site data by hand.
+  let swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swRefreshing) return;
+    swRefreshing = true;
+    window.location.reload();
+  });
 }
 if (settings.token && settings.owner && settings.repo){
   refreshAgenda();
