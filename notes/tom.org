@@ -8,7 +8,7 @@ SCHEDULED: <2026-08-27 Thu>
 SCHEDULED: <2026-08-24 Mon>
 *** DONE Get relief for PA on Wed
 SCHEDULED: <2026-08-24 Mon>
-*** TODO Make lunches
+*** DONE Make lunches
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-24 Mon>
