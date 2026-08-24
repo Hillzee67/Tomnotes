@@ -24,7 +24,7 @@ SCHEDULED: <2026-08-25 Tue>
 *** Dinner for Nanna and Maria 8 slices
 SCHEDULED: <2026-08-26 Wed>
 *** Jumps and Throws
-<2026-08-26 Wed>
+<2026-08-25 Tue>
 *** Athletics carnival
 <2026-08-28 Fri>
 ** Completed Tasks
