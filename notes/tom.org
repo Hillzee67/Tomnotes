@@ -1,8 +1,7 @@
 * Tomorg
 ** Tasks
 *** TODO Go to the library pre trip
-*** DONE Work out the plan for Wed re waether
-SCHEDULED: <2026-08-24 Mon>
+SCHEDULED: <2026-08-27 Thu>
 *** TODO Send out the student numbers
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Get relief for PA on Wed
@@ -27,6 +26,8 @@ SCHEDULED: <2026-08-26 Wed>
 *** Athletics carnival
 <2026-08-28 Fri>
 ** Completed Tasks
+*** DONE Work out the plan for Wed re waether
+SCHEDULED: <2026-08-24 Mon>
 *** DONE Sort the green waste pile
 SCHEDULED: <2026-08-23 Sun>
 *** DONE Get the power stuff for the carnival and drop it at school with the Ipad and get my jacket
