@@ -1,5 +1,6 @@
 * Tomorg
 ** Tasks
+*** TODO Go to the library pre trip
 *** TODO Work out the plan for Wed re waether
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Send out the student numbers
