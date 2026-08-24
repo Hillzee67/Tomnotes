@@ -1,6 +1,6 @@
 * Tomorg
 ** Tasks
-*** TODO Add the junior running events to the score sheet
+*** DONE Add the junior running events to the score sheet
 SCHEDULED: <2026-08-24 Mon>
 *** TODO Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
