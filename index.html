@@ -129,6 +129,7 @@
   .CodeMirror-foldgutter{width:16px;}
   .CodeMirror-foldgutter-open:after{content:"▾"; color:var(--text-dim); cursor:pointer; padding-left:2px;}
   .CodeMirror-foldgutter-folded:after{content:"▸"; color:var(--accent); cursor:pointer; padding-left:2px;}
+  .CodeMirror-foldmarker{color:var(--text-dim); font-style:italic; cursor:pointer; padding:0 2px;}
   .CodeMirror-cursor{border-left:1.5px solid var(--accent);}
   .CodeMirror-selected{background:rgba(127,168,111,.25) !important;}
   .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{color:var(--text);}
@@ -474,11 +475,14 @@ async function openFile(path){
 function renderEditorPane(path){
   const main = document.getElementById('main');
   const content = fileCache[path].content;
+  const hideDoneBtn = editorView === 'outline'
+    ? `<button class="ghost" onclick="toggleHideDone('${path.replace(/'/g,"\\'")}')">${hideDoneItems ? 'show done' : 'hide done'}</button>`
+    : `<button class="ghost" id="hide-done-btn" onclick="toggleHideDoneRaw()">${hideDoneItems ? 'show done' : 'hide done'}</button>`;
   const toggle = `
     <div class="row" style="margin:0 0 10px 0;">
       <button class="${editorView==='outline'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','outline')">outline</button>
       <button class="${editorView==='raw'?'primary':'ghost'}" onclick="switchEditorView('${path.replace(/'/g,"\\'")}','raw')">raw</button>
-      ${editorView==='outline' ? `<button class="ghost" onclick="toggleHideDone('${path.replace(/'/g,"\\'")}')">${hideDoneItems ? 'show done' : 'hide done'}</button>` : ''}
+      ${hideDoneBtn}
     </div>`;
   if (editorView === 'outline'){
     let tree = buildOutlineTree(content);
@@ -542,6 +546,7 @@ function initRawEditor(content, path){
     try{
       fixTimestampWeekdaysInEditor(cmInstance);
       applyPersistedFolds(cmInstance, path);
+      applyHideDoneFolds(cmInstance);
     }catch(e){
       console.error('editor auto-fix error:', e);
     }finally{
@@ -560,6 +565,7 @@ function initRawEditor(content, path){
     if (!cmInstance) return;
     cmInstance.refresh();
     applyPersistedFolds(cmInstance, path);
+    applyHideDoneFolds(cmInstance);
   }, 30);
 }
 
@@ -616,6 +622,48 @@ function orgRangeFinder(cm, start){
     from: CodeMirror.Pos(startLine, lineText.length),
     to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
   };
+}
+
+// Like orgRangeFinder, but only matches DONE/CANCELLED headlines, and folds
+// starting from column 0 (rather than the end of the headline text) so the
+// completed headline's own line is hidden too, not just its children.
+function doneRangeFinder(cm, start){
+  const startLine = start.line;
+  const lineText = cm.getLine(startLine);
+  const m = lineText.match(/^(\*+)\s+(DONE|CANCELLED)\b/);
+  if (!m) return null;
+  const level = m[1].length;
+  const lastLine = cm.lastLine();
+  let endLine = startLine;
+  for (let i = startLine + 1; i <= lastLine; i++){
+    const t = cm.getLine(i);
+    const mm = t.match(/^(\*+)\s/);
+    if (mm && mm[1].length <= level) break;
+    endLine = i;
+  }
+  return {
+    from: CodeMirror.Pos(startLine, 0),
+    to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
+  };
+}
+
+// Folding is purely visual — cm.getValue() always returns the full,
+// unmodified text regardless of what's currently hidden — so toggling this
+// can never lose or alter any content, saved or not.
+function applyHideDoneFolds(cm){
+  const lineCount = cm.lineCount();
+  for (let i = 0; i < lineCount; i++){
+    const line = cm.getLine(i);
+    if (!/^\*+\s+(DONE|CANCELLED)\b/.test(line)) continue;
+    cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: '✓ done'}, hideDoneItems ? 'fold' : 'unfold');
+  }
+}
+
+function toggleHideDoneRaw(){
+  hideDoneItems = !hideDoneItems;
+  if (cmInstance) applyHideDoneFolds(cmInstance);
+  const btn = document.getElementById('hide-done-btn');
+  if (btn) btn.textContent = hideDoneItems ? 'show done' : 'hide done';
 }
 
 function switchEditorView(path, view){
