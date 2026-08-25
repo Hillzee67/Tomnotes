@@ -641,10 +641,13 @@ function doneRangeFinder(cm, start){
     if (mm && mm[1].length <= level) break;
     endLine = i;
   }
-  return {
-    from: CodeMirror.Pos(startLine, 0),
-    to: CodeMirror.Pos(endLine, cm.getLine(endLine).length)
-  };
+  // Extend to the start of the following line (rather than stopping at the
+  // end of endLine) so the fold swallows the trailing newline too — this is
+  // what makes the row disappear completely instead of leaving an empty line.
+  const to = endLine < lastLine
+    ? CodeMirror.Pos(endLine + 1, 0)
+    : CodeMirror.Pos(endLine, cm.getLine(endLine).length);
+  return { from: CodeMirror.Pos(startLine, 0), to };
 }
 
 // Folding is purely visual — cm.getValue() always returns the full,
@@ -655,7 +658,7 @@ function applyHideDoneFolds(cm){
   for (let i = 0; i < lineCount; i++){
     const line = cm.getLine(i);
     if (!/^\*+\s+(DONE|CANCELLED)\b/.test(line)) continue;
-    cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: '✓ done'}, hideDoneItems ? 'fold' : 'unfold');
+    cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: ''}, hideDoneItems ? 'fold' : 'unfold');
   }
 }
 
