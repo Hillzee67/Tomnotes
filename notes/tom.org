@@ -5,11 +5,11 @@ SCHEDULED: <2026-08-27 Thu>
 *** TODO Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Start to pack for the trip
-SCHEDULED: <2026-08-24 Mon>
+SCHEDULED: <2026-08-27 Thu>
 *** DONE Finish off the planning document.
 SCHEDULED: <2026-08-24 Mon>
 *** TODO work on a device to take on the trip
-SCHEDULED: <2026-08-24 Mon>
+SCHEDULED: <2026-08-26 Wed>
 *** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Remember to weigh yourself
