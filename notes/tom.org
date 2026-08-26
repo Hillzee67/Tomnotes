@@ -2,7 +2,7 @@
 ** Tasks
 *** TODO Get feedback on the Forward Planning Doc
 SCHEDULED: <2026-08-27 Thu>
-*** TODO pay bills and cash in car reports
+*** DONE pay bills and cash in car reports
 SCHEDULED: <2026-08-27 Thu>
 *** DONE Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
