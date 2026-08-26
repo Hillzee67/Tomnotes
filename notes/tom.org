@@ -1,6 +1,6 @@
 * Tomorg
 ** Tasks
-*** TODO Finalise the Planning week
+*** DONE Finalise the Planning week
 SCHEDULED: <2026-08-26 Wed>
 *** TODO pay bills and cash in car reports
 SCHEDULED: <2026-08-27 Thu>
