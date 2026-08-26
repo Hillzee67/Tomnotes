@@ -2,16 +2,12 @@
 ** Tasks
 *** TODO Get feedback on the Forward Planning Doc
 SCHEDULED: <2026-08-26 Wed>
-*** DONE Finalise the Planning week
-SCHEDULED: <2026-08-26 Wed>
 *** TODO pay bills and cash in car reports
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-27 Thu>
-*** DONE Finish off the planning document.
-SCHEDULED: <2026-08-24 Mon>
 *** TODO work on a device to take on the trip
 SCHEDULED: <2026-08-26 Wed>
 *** TODO Take a photo of the garden and email to work power
@@ -26,6 +22,10 @@ SCHEDULED: <2026-08-26 Wed>
 *** Athletics carnival
 <2026-08-28 Fri>
 ** Completed Tasks
+*** DONE Finish off the planning document.
+SCHEDULED: <2026-08-24 Mon>
+*** DONE Finalise the Planning week
+SCHEDULED: <2026-08-26 Wed>
 *** DONE Send out the student numbers
 SCHEDULED: <2026-08-24 Mon>
 *** DONE Get relief for PA on Wed
