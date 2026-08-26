@@ -257,8 +257,21 @@ async function listOrgFiles(path){
 
 /* ---------- org parsing ---------- */
 const HEADLINE_RE = /^(\*+)\s+(TODO|NEXT|WAITING|DONE|CANCELLED)?\s*(?:\[#([A-C])\]\s*)?(.*)$/;
-const DATE_RE = /(SCHEDULED|DEADLINE):\s*<(\d{4}-\d{2}-\d{2})[^>]*>/g;
-const PLAIN_TIMESTAMP_RE = /<(\d{4}-\d{2}-\d{2}) \w{3}(?: (\d{2}:\d{2}))?>/;
+const DATE_RE = /(SCHEDULED|DEADLINE):\s*<([^>]+)>/g;
+const PLAIN_TIMESTAMP_RE = /<([^>]+)>/;
+
+// Parses the inside of a timestamp, e.g. "2026-08-25 Tue 14:00 +1y", into its
+// date, optional time, and optional repeater (n + unit: d/w/m/y).
+function parseTimestampInner(inner){
+  const dateMatch = inner.match(/(\d{4}-\d{2}-\d{2})/);
+  const timeMatch = inner.match(/(\d{2}:\d{2})/);
+  const repMatch = inner.match(/\+(\d+)([dwmy])/);
+  return {
+    date: dateMatch ? dateMatch[1] : null,
+    time: timeMatch ? timeMatch[1] : null,
+    repeat: repMatch ? {n: Number(repMatch[1]), unit: repMatch[2]} : null
+  };
+}
 
 function parseOrgFile(path, text){
   const lines = text.split('\n');
@@ -273,24 +286,73 @@ function parseOrgFile(path, text){
 
     if (state){
       // A task: TODO/NEXT/WAITING/DONE/CANCELLED, dated via SCHEDULED/DEADLINE.
-      let scheduled = null, deadline = null;
+      let scheduled = null, scheduledRepeat = null, deadline = null, deadlineRepeat = null;
       let dm;
       DATE_RE.lastIndex = 0;
       while ((dm = DATE_RE.exec(nextLine)) !== null){
-        if (dm[1] === 'SCHEDULED') scheduled = dm[2];
-        if (dm[1] === 'DEADLINE') deadline = dm[2];
+        const parsed = parseTimestampInner(dm[2]);
+        if (dm[1] === 'SCHEDULED'){ scheduled = parsed.date; scheduledRepeat = parsed.repeat; }
+        if (dm[1] === 'DEADLINE'){ deadline = parsed.date; deadlineRepeat = parsed.repeat; }
       }
-      tasks.push({file: path, lineIndex: i, type: 'task', state, priority, title, scheduled, deadline});
+      tasks.push({file: path, lineIndex: i, type: 'task', state, priority, title, scheduled, scheduledRepeat, deadline, deadlineRepeat});
     } else {
       // No keyword — treat a headline with a plain timestamp underneath it
       // as an event/appointment rather than a task.
       const tm = nextLine.match(PLAIN_TIMESTAMP_RE);
       if (tm && title){
-        tasks.push({file: path, lineIndex: i, type: 'event', title, scheduled: tm[1], deadline: null, time: tm[2] || null});
+        const parsed = parseTimestampInner(tm[1]);
+        if (parsed.date){
+          tasks.push({file: path, lineIndex: i, type: 'event', title, scheduled: parsed.date, scheduledRepeat: parsed.repeat, deadline: null, deadlineRepeat: null, time: parsed.time});
+        }
       }
     }
   }
   return tasks;
+}
+
+function parseISODate(s){
+  const [y, mo, d] = s.split('-').map(Number);
+  return new Date(y, mo - 1, d);
+}
+
+// Does an item anchored on `anchorStr` (with optional `repeat`) occur on
+// `targetStr`? Non-repeating items only match their exact date; repeating
+// items match the anchor date plus any whole number of intervals forward.
+function occursOnDate(anchorStr, repeat, targetStr){
+  if (!anchorStr) return false;
+  if (anchorStr === targetStr) return true;
+  if (!repeat) return false;
+  const anchor = parseISODate(anchorStr);
+  const target = parseISODate(targetStr);
+  if (target < anchor) return false;
+  if (repeat.unit === 'd'){
+    const days = Math.round((target - anchor) / 86400000);
+    return days % repeat.n === 0;
+  }
+  if (repeat.unit === 'w'){
+    const days = Math.round((target - anchor) / 86400000);
+    return days % (repeat.n * 7) === 0;
+  }
+  if (repeat.unit === 'm'){
+    if (target.getDate() !== anchor.getDate()) return false;
+    const months = (target.getFullYear() - anchor.getFullYear()) * 12 + (target.getMonth() - anchor.getMonth());
+    return months >= 0 && months % repeat.n === 0;
+  }
+  if (repeat.unit === 'y'){
+    if (target.getDate() !== anchor.getDate() || target.getMonth() !== anchor.getMonth()) return false;
+    const years = target.getFullYear() - anchor.getFullYear();
+    return years >= 0 && years % repeat.n === 0;
+  }
+  return false;
+}
+
+function repeatLabel(repeat){
+  if (!repeat) return '';
+  if (repeat.unit === 'd') return repeat.n === 1 ? 'daily' : `every ${repeat.n} days`;
+  if (repeat.unit === 'w') return repeat.n === 1 ? 'weekly' : (repeat.n === 2 ? 'fortnightly' : `every ${repeat.n} weeks`);
+  if (repeat.unit === 'm') return repeat.n === 1 ? 'monthly' : `every ${repeat.n} months`;
+  if (repeat.unit === 'y') return repeat.n === 1 ? 'yearly' : `every ${repeat.n} years`;
+  return '';
 }
 
 function todayStr(){
@@ -334,13 +396,17 @@ function renderAgenda(){
   const today = todayStr();
   const open = tasksCache.filter(t => {
     if (t.state === 'DONE' || t.state === 'CANCELLED') return false;
-    // Events are appointments, not obligations — once the date's passed,
-    // there's nothing left to do, so just drop them rather than piling
-    // them up in Overdue like an unfinished task.
-    if (t.type === 'event' && t.scheduled && t.scheduled < today) return false;
+    // Events are appointments, not obligations — once a *non-repeating*
+    // event's date has passed, drop it rather than piling it up in
+    // Overdue. Repeating events keep their (often long-past) anchor date
+    // forever, so this must not apply to them.
+    if (t.type === 'event' && !t.scheduledRepeat && t.scheduled && t.scheduled < today) return false;
     return true;
   });
   const overdue = open.filter(t => {
+    // A repeating item is never "overdue" — it just recurs — so only
+    // non-repeating scheduled/deadline dates count here.
+    if (t.scheduledRepeat || t.deadlineRepeat) return false;
     const d = t.deadline || t.scheduled;
     return d && d < today;
   });
@@ -359,7 +425,10 @@ function renderAgenda(){
     const d = new Date(base);
     d.setDate(base.getDate() + i);
     const key = localDateStr(d);
-    const dayTasks = open.filter(t => t.scheduled === key || t.deadline === key)
+    const dayTasks = open.filter(t =>
+        occursOnDate(t.scheduled, t.scheduledRepeat, key) ||
+        occursOnDate(t.deadline, t.deadlineRepeat, key)
+      )
       .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
     days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks);
   }
@@ -374,6 +443,8 @@ function renderAgenda(){
 }
 
 function taskRow(t, cls){
+  const repeat = t.deadlineRepeat || t.scheduledRepeat;
+  const repLabel = repeat ? repeatLabel(repeat) : '';
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
   const idx = tasksCache.indexOf(t);
   if (t.type === 'event'){
@@ -382,7 +453,7 @@ function taskRow(t, cls){
       <span class="dot" aria-hidden="true"></span>
       <div class="body">
         <div class="title">${escapeHtml(t.title)}</div>
-        <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span></div>
+        <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span>${repLabel ? ' · ' + repLabel : ''}</div>
       </div>
     </div>`;
   }
@@ -390,7 +461,7 @@ function taskRow(t, cls){
     <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
     <div class="body">
       <div class="title">${escapeHtml(t.title)}</div>
-      <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}</div>
+      <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}${repLabel ? ' · ' + repLabel : ''}</div>
     </div>
   </div>`;
 }
@@ -713,19 +784,24 @@ function buildOutlineTree(content){
     const level = m[1].length;
     const state = m[2] || null;
     const title = (m[4] || '').trim();
-    let scheduled = null, deadline = null;
+    let scheduled = null, deadline = null, repeat = null;
     if (lines[i+1]){
       let dm; DATE_RE.lastIndex = 0;
       while ((dm = DATE_RE.exec(lines[i+1])) !== null){
-        if (dm[1] === 'SCHEDULED') scheduled = dm[2];
-        if (dm[1] === 'DEADLINE') deadline = dm[2];
+        const parsed = parseTimestampInner(dm[2]);
+        if (dm[1] === 'SCHEDULED'){ scheduled = parsed.date; repeat = parsed.repeat; }
+        if (dm[1] === 'DEADLINE'){ deadline = parsed.date; repeat = parsed.repeat; }
       }
       if (!scheduled && !deadline && !state){
         const tm = lines[i+1].match(PLAIN_TIMESTAMP_RE);
-        if (tm) scheduled = tm[1];
+        if (tm){
+          const parsed = parseTimestampInner(tm[1]);
+          scheduled = parsed.date;
+          repeat = parsed.repeat;
+        }
       }
     }
-    const node = {level, state, title, scheduled, deadline, lineIndex: i, children: []};
+    const node = {level, state, title, scheduled, deadline, repeat, lineIndex: i, children: []};
     while (stack.length && stack[stack.length-1].level >= level) stack.pop();
     stack[stack.length-1].children.push(node);
     stack.push(node);
@@ -744,7 +820,7 @@ function renderOutlineNodes(nodes, path){
     const stateBadge = n.state ? `<span class="badge badge-${n.state}">${n.state}</span>` : '';
     const isOpen = n.state === 'TODO' || n.state === 'NEXT' || n.state === 'WAITING';
     const titleClass = isOpen ? 'outline-title todo-open' : 'outline-title';
-    const dateLabel = n.deadline ? `deadline ${n.deadline}` : (n.scheduled ? `scheduled ${n.scheduled}` : '');
+    const dateLabel = (n.deadline ? `deadline ${n.deadline}` : (n.scheduled ? `scheduled ${n.scheduled}` : '')) + (n.repeat ? ` · ${repeatLabel(n.repeat)}` : '');
     const indent = (n.level - 1) * 18;
     const childrenHtml = hasChildren && !collapsed ? `<div class="outline-children">${renderOutlineNodes(n.children, path)}</div>` : '';
     return `<div class="outline-node" style="margin-left:${indent}px;">
