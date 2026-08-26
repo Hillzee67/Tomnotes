@@ -21,34 +21,11 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-08-27 Thu>
 *** Athletics carnival
 <2026-08-28 Fri>
+
 ** Completed Tasks
-*** DONE Finish off the planning document.
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Finalise the Planning week
-SCHEDULED: <2026-08-26 Wed>
-*** DONE Send out the student numbers
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Get relief for PA on Wed
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Make lunches
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Add the junior running events to the score sheet
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Work out the plan for Wed re waether
-SCHEDULED: <2026-08-24 Mon>
-*** DONE Sort the green waste pile
-SCHEDULED: <2026-08-23 Sun>
-*** DONE Get the power stuff for the carnival and drop it at school with the Ipad and get my jacket
-SCHEDULED: <2026-08-23 Sun>
-*** DONE Agenda test 
-SCHEDULED: <2026-08-21 Fri>
-*** DONE Test my app
-SCHEDULED: <2026-08-20 Thu>*** DONE Setup the PA for Book Week 
-SCHEDULED: <2026-08-21 Fri>
-*** DONE prune the frangipanis
-SCHEDULED: <2026-08-22 Sat>
-*** DONE Get the shopping done
-SCHEDULED: <2026-08-22 Sat>
+** Bills
+*** TODO Pay the rates 
+SCHEDULED: <2026-09-18 Fri>
 ** Notes
 
 
