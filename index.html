@@ -326,7 +326,14 @@ async function refreshAgenda(){
 
 function renderAgenda(){
   const today = todayStr();
-  const open = tasksCache.filter(t => t.state !== 'DONE' && t.state !== 'CANCELLED');
+  const open = tasksCache.filter(t => {
+    if (t.state === 'DONE' || t.state === 'CANCELLED') return false;
+    // Events are appointments, not obligations — once the date's passed,
+    // there's nothing left to do, so just drop them rather than piling
+    // them up in Overdue like an unfinished task.
+    if (t.type === 'event' && t.scheduled && t.scheduled < today) return false;
+    return true;
+  });
   const overdue = open.filter(t => {
     const d = t.deadline || t.scheduled;
     return d && d < today;
