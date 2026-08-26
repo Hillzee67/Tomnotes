@@ -4,7 +4,7 @@
 SCHEDULED: <2026-08-27 Thu>
 *** TODO pay bills and cash in car reports
 SCHEDULED: <2026-08-27 Thu>
-*** TODO Go to the library pre trip
+*** DONE Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Start to pack for the trip
 SCHEDULED: <2026-08-27 Thu>
