@@ -13,7 +13,7 @@ SCHEDULED: <2026-08-26 Wed>
 *** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Remember to weigh yourself
-SCHEDULED: <2026-08-27 Thu>
+SCHEDULED: <2026-08-28 Fri>
 ** Events
 *** Dinner for Nanna and Maria 8 slices
 SCHEDULED: <2026-08-26 Wed>
