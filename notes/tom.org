@@ -15,6 +15,7 @@ SCHEDULED: <2026-09-20 Sun>
 *** DONE Remember to weigh yourself
 SCHEDULED: <2026-08-28 Fri>
 ** Events
+*** Meet with Ichtus
 *** Start our trip fly to Adelaide
 <2026-08-29 Sat 07:10>
 SCHEDULED: <2026-08-29 Sat>
@@ -24,7 +25,8 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-08-27 Thu>
 *** Athletics carnival
 <2026-08-28 Fri>
-
+*** 
+<2026-08-28 Fri 16:00>
 ** Completed Tasks
 ** Bills
 *** TODO Pay the rates 
