@@ -8,7 +8,7 @@ SCHEDULED: <2026-08-27 Thu>
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Pack for the trip
 SCHEDULED: <2026-08-28 Fri>
-*** TODO work on a device to take on the trip
+*** DONE work on a device to take on the trip
 SCHEDULED: <2026-08-27 Thu>
 *** TODO Take a photo of the garden and email to work power
 SCHEDULED: <2026-09-20 Sun>
