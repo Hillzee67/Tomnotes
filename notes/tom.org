@@ -16,7 +16,7 @@ SCHEDULED: <2026-09-20 Sun>
 SCHEDULED: <2026-08-28 Fri>
 ** Events
 *** Start trip fly to Adelaide
-SCHEDULED: <2026-08-29 Sat>
+SCHEDULED: <2026-08-29 Sat 7:10>
 *** Dinner for Nanna and Maria 8 slices
 SCHEDULED: <2026-08-26 Wed>
 *** Jumps and Throws
