@@ -15,8 +15,9 @@ SCHEDULED: <2026-09-20 Sun>
 *** DONE Remember to weigh yourself
 SCHEDULED: <2026-08-28 Fri>
 ** Events
-*** Start trip fly to Adelaide
-SCHEDULED: <2026-08-29 Sat 7:10>
+*** Start our trip fly to Adelaide
+<2026-08-29 Sat 07:10>
+SCHEDULED: <2026-08-29 Sat>
 *** Dinner for Nanna and Maria 8 slices
 SCHEDULED: <2026-08-26 Wed>
 *** Jumps and Throws
