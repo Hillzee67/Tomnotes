@@ -580,6 +580,7 @@ function renderEditorPane(path){
       <div class="row" style="margin-bottom:8px;">
         <div class="empty" style="padding:0;">${SHORTCUT_HINT}</div>
         <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
+        <button class="ghost" onclick="openEventTimePicker()">🕐 event w/ time</button>
       </div>
       <div id="editor-cm"></div>`;
     initRawEditor(content, path);
@@ -874,7 +875,7 @@ function insertScheduledAtCursor(cm, date){
   cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
 }
 
-function insertEventAtCursor(cm, date){
+function insertEventAtCursor(cm, date, time){
   const pos = cm.getCursor();
   const line = cm.getLine(pos.line);
   if (!/^\*+\s/.test(line)){
@@ -885,7 +886,7 @@ function insertEventAtCursor(cm, date){
   const d = date || new Date();
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const iso = localDateStr(d);
-  const insertion = `\n<${iso} ${days[d.getDay()]}>`;
+  const insertion = `\n<${iso} ${days[d.getDay()]}${time ? ' ' + time : ''}>`;
   cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
 }
 
@@ -911,6 +912,46 @@ function openDatePicker(){
   input.addEventListener('blur', () => setTimeout(cleanup, 200));
   if (input.showPicker) input.showPicker();
   else input.click();
+}
+
+function hiddenPickerInput(type){
+  const input = document.createElement('input');
+  input.type = type;
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  input.style.pointerEvents = 'none';
+  input.style.left = '50%';
+  input.style.top = '0';
+  document.body.appendChild(input);
+  return input;
+}
+
+// Chains a native date picker into a native time picker, then inserts an
+// event timestamp with both — for meetings and appointments that need a
+// specific time, as opposed to Ctrl-Alt-E's quick all-day event.
+function openEventTimePicker(){
+  if (!cmInstance) return;
+  const dateInput = hiddenPickerInput('date');
+  const cleanupDate = () => { if (dateInput.parentNode) document.body.removeChild(dateInput); };
+  dateInput.addEventListener('change', () => {
+    if (!dateInput.value){ cleanupDate(); return; }
+    const [y, m, d] = dateInput.value.split('-').map(Number);
+    const chosenDate = new Date(y, m - 1, d);
+    cleanupDate();
+    const timeInput = hiddenPickerInput('time');
+    const cleanupTime = () => { if (timeInput.parentNode) document.body.removeChild(timeInput); };
+    timeInput.addEventListener('change', () => {
+      insertEventAtCursor(cmInstance, chosenDate, timeInput.value || null);
+      cmInstance.focus();
+      cleanupTime();
+    });
+    timeInput.addEventListener('blur', () => setTimeout(cleanupTime, 200));
+    if (timeInput.showPicker) timeInput.showPicker();
+    else timeInput.click();
+  });
+  dateInput.addEventListener('blur', () => setTimeout(cleanupDate, 200));
+  if (dateInput.showPicker) dateInput.showPicker();
+  else dateInput.click();
 }
 
 // If the date digits in a SCHEDULED/DEADLINE timestamp are edited by hand,
