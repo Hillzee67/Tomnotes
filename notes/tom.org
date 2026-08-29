@@ -6,7 +6,7 @@ SCHEDULED: <2026-08-27 Thu>
 SCHEDULED: <2026-08-27 Thu>
 *** DONE Go to the library pre trip
 SCHEDULED: <2026-08-27 Thu>
-*** TODO Pack for the trip
+*** DONE Pack for the trip
 SCHEDULED: <2026-08-28 Fri>
 *** DONE work on a device to take on the trip
 SCHEDULED: <2026-08-27 Thu>
