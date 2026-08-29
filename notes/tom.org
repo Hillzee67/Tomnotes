@@ -32,5 +32,7 @@ SCHEDULED: <2026-08-26 Wed>
 SCHEDULED: <2026-09-18 Fri>
 ** Notes
 *** Trip to Adelaide
+**** Day 1
+
 
 
