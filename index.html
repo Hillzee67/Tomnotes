@@ -629,21 +629,31 @@ function initRawEditor(content, path){
     'Ctrl-Alt-T': cm => toggleTodoAtCursor(cm),
     'Ctrl-Alt-E': cm => insertEventAtCursor(cm)
   });
+  let reconcileTimer = null;
+  const reconcile = () => {
+    if (!cmInstance) return;
+    suppressAutoFix = true;
+    cmInstance.operation(() => {
+      try{
+        fixTimestampWeekdaysInEditor(cmInstance);
+        applyPersistedFolds(cmInstance, path);
+        applyHideDoneFolds(cmInstance);
+      }catch(e){
+        console.error('editor auto-fix error:', e);
+      }
+    });
+    suppressAutoFix = false;
+  };
   cmInstance.on('changes', () => {
     if (suppressAutoFix) return;
-    suppressAutoFix = true;
-    try{
-      fixTimestampWeekdaysInEditor(cmInstance);
-      applyPersistedFolds(cmInstance, path);
-      applyHideDoneFolds(cmInstance);
-    }catch(e){
-      console.error('editor auto-fix error:', e);
-    }finally{
-      suppressAutoFix = false;
-    }
+    // Debounced: this does a handful of full-document passes, which is
+    // instant on a pause but was previously running on every single
+    // keystroke — that's what caused the typing lag.
+    clearTimeout(reconcileTimer);
+    reconcileTimer = setTimeout(reconcile, 400);
   });
-  cmInstance.on('fold', (cm, from) => recordFoldChange(cm, path, from.line, true));
-  cmInstance.on('unfold', (cm, from) => recordFoldChange(cm, path, from.line, false));
+  cmInstance.on('fold', (cm, from) => { if (!suppressAutoFix) recordFoldChange(cm, path, from.line, true); });
+  cmInstance.on('unfold', (cm, from) => { if (!suppressAutoFix) recordFoldChange(cm, path, from.line, false); });
   if (window._jumpToLine !== undefined){
     const line = window._jumpToLine;
     cmInstance.setCursor({line, ch: 0});
@@ -653,8 +663,12 @@ function initRawEditor(content, path){
   setTimeout(() => {
     if (!cmInstance) return;
     cmInstance.refresh();
-    applyPersistedFolds(cmInstance, path);
-    applyHideDoneFolds(cmInstance);
+    suppressAutoFix = true;
+    cmInstance.operation(() => {
+      applyPersistedFolds(cmInstance, path);
+      applyHideDoneFolds(cmInstance);
+    });
+    suppressAutoFix = false;
   }, 30);
 }
 
