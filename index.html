@@ -581,6 +581,7 @@ function renderEditorPane(path){
         <div class="empty" style="padding:0;">${SHORTCUT_HINT}</div>
         <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
         <button class="ghost" onclick="openEventTimePicker()">🕐 event w/ time</button>
+        <button class="ghost" onclick="openImagePicker()">🖼 add image</button>
       </div>
       <div id="editor-cm"></div>`;
     initRawEditor(content, path);
@@ -902,6 +903,84 @@ function insertEventAtCursor(cm, date, time){
   const iso = localDateStr(d);
   const insertion = `\n<${iso} ${days[d.getDay()]}${time ? ' ' + time : ''}>`;
   cm.replaceRange(insertion, {line: pos.line, ch: lineLen});
+}
+
+// Downscales/recompresses an image client-side before upload, since
+// GitHub's Contents API has roughly a 1MB ceiling per file and phone
+// photos routinely blow past that untouched.
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim){
+          if (w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Could not read that image'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read that file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadImage(file){
+  setStatus('busy', 'uploading image…');
+  const dataUrl = await resizeImageFile(file, 1600, 0.82);
+  const base64 = dataUrl.split(',')[1];
+  const stem = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9\-_]/g, '_') || 'image';
+  const imgPath = `images/${stem}-${Date.now()}.jpg`;
+  const res = await fetch(`${apiBase()}/contents/${imgPath}`, {
+    method: 'PUT',
+    headers: {...ghHeaders(), 'Content-Type': 'application/json'},
+    body: JSON.stringify({message: `Add image ${imgPath}`, content: base64, branch: settings.branch})
+  });
+  if (!res.ok){
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`GitHub error ${res.status}: ${err.message || res.statusText}`);
+  }
+  setStatus('ok', 'image uploaded');
+  return {path: imgPath, dataUrl};
+}
+
+function openImagePicker(){
+  if (!cmInstance) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    document.body.removeChild(input);
+    if (!file) return;
+    try{
+      const {path: imgPath, dataUrl} = await uploadImage(file);
+      const pos = cmInstance.getCursor();
+      const lineLen = cmInstance.getLine(pos.line).length;
+      cmInstance.replaceRange(`\n[[${imgPath}]]`, {line: pos.line, ch: lineLen});
+      const preview = document.createElement('img');
+      preview.src = dataUrl;
+      preview.style.maxWidth = '220px';
+      preview.style.maxHeight = '220px';
+      preview.style.borderRadius = '8px';
+      preview.style.display = 'block';
+      preview.style.margin = '4px 0 8px 0';
+      cmInstance.addLineWidget(pos.line + 1, preview);
+      cmInstance.focus();
+    }catch(e){
+      setStatus('err', e.message);
+    }
+  });
+  input.click();
 }
 
 function openDatePicker(){
