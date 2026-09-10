@@ -231,6 +231,28 @@ async function ghGetFile(path){
   const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
   return {content, sha: data.sha};
 }
+
+const IMAGE_MIME = {jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp'};
+const imageDataCache = {}; // path -> Promise<dataUrl>, so revisiting a file doesn't re-fetch its images
+
+// Unlike ghGetFile, this must NOT run the content through UTF-8 decoding —
+// that's only correct for text files and would corrupt binary image bytes.
+async function ghGetImageDataUrl(path){
+  if (imageDataCache[path]) return imageDataCache[path];
+  const promise = (async () => {
+    const url = `${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`;
+    const res = await fetch(url, {headers: ghHeaders()});
+    if (!res.ok) throw new Error(`GitHub error ${res.status}`);
+    const data = await res.json();
+    const base64 = data.content.replace(/\n/g, '');
+    const ext = (path.split('.').pop() || '').toLowerCase();
+    const mime = IMAGE_MIME[ext] || 'image/jpeg';
+    return `data:${mime};base64,${base64}`;
+  })();
+  imageDataCache[path] = promise;
+  try{ return await promise; } catch(e){ delete imageDataCache[path]; throw e; }
+}
+
 async function ghPutFile(path, content, sha, message){
   const url = `${apiBase()}/contents/${path}`;
   const body = {
@@ -670,7 +692,37 @@ function initRawEditor(content, path){
       applyHideDoneFolds(cmInstance);
     });
     suppressAutoFix = false;
+    renderImagePreviews(cmInstance); // fire-and-forget: runs once per file open, not on every edit
   }, 30);
+}
+
+// Scans the file for [[path/to/image.ext]] links and renders each as an
+// inline preview widget. Only run once when a file is opened (not part of
+// the debounced per-edit reconciliation) — re-scanning the whole document
+// on every keystroke is exactly the kind of cost that caused the earlier
+// typing-lag issue.
+async function renderImagePreviews(cm){
+  const lineCount = cm.lineCount();
+  for (let i = 0; i < lineCount; i++){
+    const line = cm.getLine(i);
+    const m = line.match(/\[\[([^\]]+\.(?:png|jpe?g|gif|webp))\]\]/i);
+    if (!m) continue;
+    const imgPath = m[1];
+    try{
+      const dataUrl = await ghGetImageDataUrl(imgPath);
+      if (cmInstance !== cm) return; // user navigated away while this was loading
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.style.maxWidth = '220px';
+      img.style.maxHeight = '220px';
+      img.style.borderRadius = '8px';
+      img.style.display = 'block';
+      img.style.margin = '4px 0 8px 0';
+      cm.addLineWidget(i, img);
+    }catch(e){
+      console.error('image preview failed for', imgPath, e);
+    }
+  }
 }
 
 // Identify a headline by level+title (same convention Outline view uses)
