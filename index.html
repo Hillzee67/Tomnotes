@@ -137,10 +137,15 @@
   .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{color:var(--text);}
   .cm-todo-open{color:var(--blue); font-weight:600;}
   .cm-todo-done{color:var(--accent); font-weight:600;}
-  .cm-level-1{color:var(--gold); font-weight:600;}
-  .cm-level-2{color:var(--teal); font-weight:600;}
-  .cm-level-3{color:var(--lavender); font-weight:600;}
-  .cm-level-4{color:var(--text-dim); font-weight:600;}
+  .cm-level-1{color:var(--gold); font-weight:700; font-size:17px;}
+  .cm-level-2{color:var(--teal); font-weight:700; font-size:15px;}
+  .cm-level-3{color:var(--lavender); font-weight:600; font-size:14px;}
+  .cm-level-4{color:var(--text-dim); font-weight:600; font-size:13px;}
+  .cm-emph-bold{font-weight:700;}
+  .cm-emph-italic{font-style:italic;}
+  .cm-emph-underline{text-decoration:underline;}
+  .cm-emph-code{font-family:var(--mono); background:rgba(255,255,255,.07); padding:0 3px; border-radius:3px;}
+  .cm-emph-strike{text-decoration:line-through; opacity:.65;}
   .cm-searching{background:rgba(217,180,106,.25);}
   .outline-node{}
   .outline-row{
@@ -613,28 +618,51 @@ function renderEditorPane(path){
 // Minimal highlighting mode: colors the TODO-state keyword at the start of
 // a headline, leaving everything else as plain text.
 CodeMirror.defineMode('org-highlight', function(){
+  const emphasisPatterns = [
+    {re: /^\*([^\s*](?:[^*]*[^\s*])?)\*/, cls: 'emph-bold'},
+    {re: /^\/([^\s\/](?:[^\/]*[^\s\/])?)\//, cls: 'emph-italic'},
+    {re: /^_([^\s_](?:[^_]*[^\s_])?)_/, cls: 'emph-underline'},
+    {re: /^=([^\s=](?:[^=]*[^\s=])?)=/, cls: 'emph-code'},
+    {re: /^~([^\s~](?:[^~]*[^\s~])?)~/, cls: 'emph-code'},
+    {re: /^\+([^\s+](?:[^+]*[^\s+])?)\+/, cls: 'emph-strike'}
+  ];
   return {
-    startState: function(){ return {headlineMatch: null}; },
+    startState: function(){ return {headlineMatch: null, level: null}; },
     token: function(stream, state){
       if (stream.sol()){
         state.headlineMatch = stream.string.match(/^(\*+)(\s+)(TODO|NEXT|WAITING|DONE|CANCELLED)?/);
+        state.level = state.headlineMatch ? Math.min(state.headlineMatch[1].length, 4) : null;
       }
       const m = state.headlineMatch;
       const pos = stream.pos;
+      const levelCls = state.level ? ('level-' + state.level) : null;
+
       if (m && pos === 0){
         stream.pos = m[1].length;
-        return 'level-' + Math.min(m[1].length, 4);
+        return levelCls; // stars: color + size for this heading level
       }
       if (m && pos === m[1].length){
         stream.pos = m[1].length + m[2].length;
-        return null;
+        return null; // the space between stars and keyword/title
       }
       if (m && m[3] && pos === m[1].length + m[2].length){
         stream.pos = m[1].length + m[2].length + m[3].length;
+        // Keyword keeps its own status color rather than the level color,
+        // so open/done stays legible regardless of heading depth.
         return (m[3] === 'DONE' || m[3] === 'CANCELLED') ? 'todo-done' : 'todo-open';
       }
-      stream.skipToEnd();
-      return null;
+      // Remaining text — the heading's title, or a plain body line. Check
+      // for an org emphasis span starting right here.
+      const rest = stream.string.slice(stream.pos);
+      for (const p of emphasisPatterns){
+        const em = rest.match(p.re);
+        if (em){
+          stream.pos += em[0].length;
+          return levelCls ? (levelCls + ' ' + p.cls) : p.cls;
+        }
+      }
+      stream.next();
+      return levelCls; // plain title text still gets the heading's size; plain body text gets null
     }
   };
 });
