@@ -305,7 +305,12 @@ async function ghPutFile(path, content, sha, message){
   };
   if (sha) body.sha = sha;
   const res = await fetch(url, {method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  if (!res.ok){
+    if (res.status === 409){
+      throw new Error('This file changed elsewhere since it was last loaded here — close and reopen it, then try again.');
+    }
+    throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  }
   return res.json();
 }
 async function listOrgFiles(path){
@@ -1195,7 +1200,13 @@ const SHORTCUT_HINT = IS_MAC
   ? '⌃⌥T toggle todo · ⌃⌥E event · 📅 pick date for scheduled · tap ▸ to fold'
   : 'ctrl+alt+t toggle todo · ctrl+alt+e event · 📅 pick date for scheduled · tap ▸ to fold';
 
+let saveInFlight = false;
 async function saveFile(path){
+  // Guards against a double-tap firing two overlapping saves — the second
+  // would otherwise race the first and get rejected by GitHub as a
+  // conflict, since its cached sha is stale by the time it lands.
+  if (saveInFlight) return;
+  saveInFlight = true;
   const content = cmInstance ? cmInstance.getValue() : (fileCache[path] ? fileCache[path].content : '');
   const cached = fileCache[path];
   setStatus('busy', 'saving…');
@@ -1205,6 +1216,8 @@ async function saveFile(path){
     setStatus('ok', 'saved');
   }catch(e){
     setStatus('err', e.message);
+  }finally{
+    saveInFlight = false;
   }
 }
 
@@ -1277,14 +1290,21 @@ function closeQuickAdd(){
   document.getElementById('quickadd-overlay').classList.remove('open');
 }
 
+let quickAddInFlight = false;
 async function submitQuickAdd(){
+  if (quickAddInFlight) return;
   const input = document.getElementById('quickadd-input');
   const title = input.value.trim();
   if (!title) return;
   const dateStr = document.getElementById('quickadd-date').value || null;
   const timeStr = document.getElementById('quickadd-time').value || null;
   closeQuickAdd();
-  await appendTodoToFile(capturePath(), title, dateStr, timeStr);
+  quickAddInFlight = true;
+  try{
+    await appendTodoToFile(capturePath(), title, dateStr, timeStr);
+  }finally{
+    quickAddInFlight = false;
+  }
 }
 
 document.getElementById('quickadd-input').addEventListener('keydown', e => {
