@@ -180,6 +180,27 @@
   footer.modeline .status.ok{color:var(--accent);}
   footer.modeline .status.err{color:var(--rust);}
   footer.modeline .status.busy{color:var(--gold);}
+  .fab{
+    position:fixed; right:18px; bottom:calc(56px + env(safe-area-inset-bottom));
+    width:52px; height:52px; border-radius:50%; z-index:10;
+    background:var(--accent-dim); color:#0f1210; border:none;
+    font-size:28px; line-height:1; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.4); cursor:pointer;
+  }
+  .fab:active{transform:scale(0.94);}
+  .quickadd-overlay{
+    display:none; position:fixed; inset:0; z-index:20;
+    background:rgba(0,0,0,.55);
+    align-items:flex-end; justify-content:center;
+  }
+  .quickadd-overlay.open{display:flex;}
+  .quickadd-sheet{
+    width:100%; max-width:480px; background:var(--panel);
+    border:1px solid var(--line); border-bottom:none;
+    border-radius:14px 14px 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom)) 16px;
+  }
+  #quickadd-target{color:var(--accent); font-family:var(--mono);}
   a{color:var(--accent);}
   ::selection{background:var(--accent-dim); color:#0f1210;}
 </style>
@@ -199,6 +220,19 @@
   <span id="ml-status" class="status">not configured</span>
 </footer>
 
+<button class="fab" onclick="openQuickAdd()" aria-label="Quick add task">+</button>
+
+<div class="quickadd-overlay" id="quickadd-overlay" onclick="if(event.target===this) closeQuickAdd()">
+  <div class="quickadd-sheet">
+    <div class="empty" style="margin-bottom:8px;">New TODO → <span id="quickadd-target"></span></div>
+    <input type="text" id="quickadd-input" placeholder="What needs doing?" autocomplete="off">
+    <div class="row" style="margin-top:12px;">
+      <button class="primary" onclick="submitQuickAdd()">Add</button>
+      <button class="ghost" onclick="closeQuickAdd()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------- storage ---------- */
 const store = {
@@ -206,7 +240,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 
-let settings = store.get('gh_settings', {token:'', owner:'', repo:'', branch:'main', notesPath:'notes'});
+let settings = store.get('gh_settings', {token:'', owner:'', repo:'', branch:'main', notesPath:'notes', captureFile:'inbox.org'});
 let fileCache = {};   // path -> {content, sha}
 let tasksCache = [];  // parsed tasks from last agenda refresh
 let currentTab = 'agenda';
@@ -1186,11 +1220,16 @@ function renderSettings(){
     <input type="text" id="s-branch" value="${settings.branch}" placeholder="main">
     <label>Notes folder</label>
     <input type="text" id="s-path" value="${settings.notesPath}" placeholder="notes">
+    <label>Quick-add file</label>
+    <input type="text" id="s-capture" value="${settings.captureFile || 'inbox.org'}" placeholder="inbox.org">
     <div class="row" style="margin-top:16px;">
       <button class="primary" onclick="saveSettings()">save & connect</button>
     </div>
     <div class="empty" style="margin-top:18px; line-height:1.6;">
       Create a fine-grained personal access token scoped only to this repo, with read/write access to "Contents". Nothing is sent anywhere except directly to api.github.com from this page.
+    </div>
+    <div class="empty" style="margin-top:10px; line-height:1.6;">
+      The + button (and the phone's "Add Task" home-screen shortcut) appends new TODOs straight to the quick-add file above, inside your notes folder — sort them into other files later whenever you like.
     </div>
   `;
 }
@@ -1201,11 +1240,66 @@ function saveSettings(){
     owner: document.getElementById('s-owner').value.trim(),
     repo: document.getElementById('s-repo').value.trim(),
     branch: document.getElementById('s-branch').value.trim() || 'main',
-    notesPath: document.getElementById('s-path').value.trim().replace(/\/+$/,'') || 'notes'
+    notesPath: document.getElementById('s-path').value.trim().replace(/\/+$/,'') || 'notes',
+    captureFile: document.getElementById('s-capture').value.trim().replace(/^\/+/,'') || 'inbox.org'
   };
   store.set('gh_settings', settings);
   switchTab('agenda');
   refreshAgenda();
+}
+
+/* ---------- quick add ---------- */
+function capturePath(){
+  return settings.notesPath + '/' + (settings.captureFile || 'inbox.org');
+}
+
+function openQuickAdd(){
+  if (!settings.token || !settings.owner || !settings.repo){
+    setStatus('err', 'connect a repo first (Settings)');
+    switchTab('settings');
+    return;
+  }
+  document.getElementById('quickadd-target').textContent = capturePath();
+  const overlay = document.getElementById('quickadd-overlay');
+  overlay.classList.add('open');
+  const input = document.getElementById('quickadd-input');
+  input.value = '';
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeQuickAdd(){
+  document.getElementById('quickadd-overlay').classList.remove('open');
+}
+
+async function submitQuickAdd(){
+  const input = document.getElementById('quickadd-input');
+  const title = input.value.trim();
+  if (!title) return;
+  closeQuickAdd();
+  await appendTodoToFile(capturePath(), title);
+}
+
+document.getElementById('quickadd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); submitQuickAdd(); }
+});
+
+async function appendTodoToFile(path, title){
+  setStatus('busy', 'adding…');
+  try{
+    let existing = null;
+    try{ existing = await ghGetFile(path); }
+    catch(e){ existing = null; } // file doesn't exist yet — quick-add will create it
+    const line = `*** TODO ${title}\n`;
+    const newContent = existing
+      ? (existing.content.endsWith('\n') || existing.content === '' ? existing.content + line : existing.content + '\n' + line)
+      : line;
+    const res = await ghPutFile(path, newContent, existing ? existing.sha : null, `Quick add: ${title}`);
+    fileCache[path] = {content: newContent, sha: res.content.sha};
+    setStatus('ok', 'added');
+    if (currentTab === 'agenda') refreshAgenda();
+  }catch(e){
+    setStatus('err', e.message);
+  }
 }
 
 /* ---------- tabs / status ---------- */
@@ -1245,6 +1339,10 @@ if (settings.token && settings.owner && settings.repo){
 } else {
   setStatus('err', 'not configured');
   renderAgenda();
+}
+if (new URLSearchParams(window.location.search).get('action') === 'quickadd'){
+  setTimeout(openQuickAdd, 100);
+  history.replaceState(null, '', window.location.pathname); // drop the query param so a later refresh doesn't reopen it
 }
 </script>
 </body>

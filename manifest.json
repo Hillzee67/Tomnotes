@@ -10,5 +10,14 @@
   "theme_color": "#1b1d1e",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Task",
+      "short_name": "Add Task",
+      "description": "Quickly add a new TODO",
+      "url": "./index.html?action=quickadd",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    }
   ]
 }
