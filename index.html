@@ -110,7 +110,7 @@
   }
   .row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
   label{display:block; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin:12px 0 5px 2px; text-transform:uppercase; letter-spacing:.08em;}
-  input[type=text], input[type=password]{
+  input[type=text], input[type=password], input[type=date]{
     width:100%; background:var(--panel); border:1px solid var(--line); color:var(--text);
     font-family:var(--mono); font-size:13.5px; padding:10px 11px; border-radius:7px;
   }
@@ -226,6 +226,8 @@
   <div class="quickadd-sheet">
     <div class="empty" style="margin-bottom:8px;">New TODO → <span id="quickadd-target"></span></div>
     <input type="text" id="quickadd-input" placeholder="What needs doing?" autocomplete="off">
+    <label style="margin-top:10px;">Date (optional)</label>
+    <input type="date" id="quickadd-date">
     <div class="row" style="margin-top:12px;">
       <button class="primary" onclick="submitQuickAdd()">Add</button>
       <button class="ghost" onclick="closeQuickAdd()">Cancel</button>
@@ -1264,6 +1266,7 @@ function openQuickAdd(){
   overlay.classList.add('open');
   const input = document.getElementById('quickadd-input');
   input.value = '';
+  document.getElementById('quickadd-date').value = '';
   setTimeout(() => input.focus(), 50);
 }
 
@@ -1275,21 +1278,28 @@ async function submitQuickAdd(){
   const input = document.getElementById('quickadd-input');
   const title = input.value.trim();
   if (!title) return;
+  const dateStr = document.getElementById('quickadd-date').value || null;
   closeQuickAdd();
-  await appendTodoToFile(capturePath(), title);
+  await appendTodoToFile(capturePath(), title, dateStr);
 }
 
 document.getElementById('quickadd-input').addEventListener('keydown', e => {
   if (e.key === 'Enter'){ e.preventDefault(); submitQuickAdd(); }
 });
 
-async function appendTodoToFile(path, title){
+async function appendTodoToFile(path, title, dateStr){
   setStatus('busy', 'adding…');
   try{
     let existing = null;
     try{ existing = await ghGetFile(path); }
     catch(e){ existing = null; } // file doesn't exist yet — quick-add will create it
-    const line = `*** TODO ${title}\n`;
+    let line = `*** TODO ${title}\n`;
+    if (dateStr){
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const dow = days[new Date(y, m - 1, d).getDay()];
+      line += `SCHEDULED: <${dateStr} ${dow}>\n`;
+    }
     const newContent = existing
       ? (existing.content.endsWith('\n') || existing.content === '' ? existing.content + line : existing.content + '\n' + line)
       : line;
