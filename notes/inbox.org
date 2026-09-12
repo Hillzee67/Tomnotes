@@ -1,3 +1,3 @@
 
 *** TODO Fly to perth
-SCHEDULED: <2026-09-17 Thu>
+SCHEDULED: <2026-09-17 Thu 0600>
