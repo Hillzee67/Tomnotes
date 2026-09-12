@@ -1,4 +1,4 @@
 *** TODO Fly to perth
-*** TODO Fly to perth
+*** DONE Fly to perth
 *** TODO Fly to perth
 SCHEDULED: <2026-09-17 Thu>
