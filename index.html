@@ -237,6 +237,20 @@
   </div>
 </div>
 
+<div class="quickadd-overlay" id="eventadd-overlay" onclick="if(event.target===this) closeEventAdd()">
+  <div class="quickadd-sheet">
+    <div class="empty" style="margin-bottom:8px;">Insert event timestamp</div>
+    <label>Date</label>
+    <input type="date" id="eventadd-date">
+    <label style="margin-top:10px;">Time (optional)</label>
+    <input type="time" id="eventadd-time">
+    <div class="row" style="margin-top:12px;">
+      <button class="primary" onclick="submitEventAdd()">Insert</button>
+      <button class="ghost" onclick="closeEventAdd()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------- storage ---------- */
 const store = {
@@ -1130,44 +1144,30 @@ function openDatePicker(){
   else input.click();
 }
 
-function hiddenPickerInput(type){
-  const input = document.createElement('input');
-  input.type = type;
-  input.style.position = 'fixed';
-  input.style.opacity = '0';
-  input.style.pointerEvents = 'none';
-  input.style.left = '50%';
-  input.style.top = '0';
-  document.body.appendChild(input);
-  return input;
-}
-
-// Chains a native date picker into a native time picker, then inserts an
-// event timestamp with both — for meetings and appointments that need a
-// specific time, as opposed to Ctrl-Alt-E's quick all-day event.
+// Uses a sheet with visible date/time fields rather than chaining two
+// native pickers: mobile browsers block a showPicker() call that isn't
+// triggered by a direct user gesture, so opening the time picker from
+// inside the date picker's change handler silently did nothing on phones.
 function openEventTimePicker(){
   if (!cmInstance) return;
-  const dateInput = hiddenPickerInput('date');
-  const cleanupDate = () => { if (dateInput.parentNode) document.body.removeChild(dateInput); };
-  dateInput.addEventListener('change', () => {
-    if (!dateInput.value){ cleanupDate(); return; }
-    const [y, m, d] = dateInput.value.split('-').map(Number);
-    const chosenDate = new Date(y, m - 1, d);
-    cleanupDate();
-    const timeInput = hiddenPickerInput('time');
-    const cleanupTime = () => { if (timeInput.parentNode) document.body.removeChild(timeInput); };
-    timeInput.addEventListener('change', () => {
-      insertEventAtCursor(cmInstance, chosenDate, timeInput.value || null);
-      cmInstance.focus();
-      cleanupTime();
-    });
-    timeInput.addEventListener('blur', () => setTimeout(cleanupTime, 200));
-    if (timeInput.showPicker) timeInput.showPicker();
-    else timeInput.click();
-  });
-  dateInput.addEventListener('blur', () => setTimeout(cleanupDate, 200));
-  if (dateInput.showPicker) dateInput.showPicker();
-  else dateInput.click();
+  const today = new Date();
+  document.getElementById('eventadd-date').value = localDateStr(today);
+  document.getElementById('eventadd-time').value = '';
+  document.getElementById('eventadd-overlay').classList.add('open');
+}
+
+function closeEventAdd(){
+  document.getElementById('eventadd-overlay').classList.remove('open');
+}
+
+function submitEventAdd(){
+  const dateStr = document.getElementById('eventadd-date').value;
+  const timeStr = document.getElementById('eventadd-time').value || null;
+  closeEventAdd();
+  if (!dateStr || !cmInstance) return;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  insertEventAtCursor(cmInstance, new Date(y, m - 1, d), timeStr);
+  cmInstance.focus();
 }
 
 // If the date digits in a SCHEDULED/DEADLINE timestamp are edited by hand,
