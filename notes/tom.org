@@ -15,6 +15,8 @@ SCHEDULED: <2026-09-22 Tue>
 *** DONE Remember to weigh yourself
 SCHEDULED: <2026-08-28 Fri>
 ** Events
+*** Finals
+<2026-09-18 Fri>
 *** Board Meeting 
 <2026-09-22 Tue 07:30>
 *** Meet with Ichtus
