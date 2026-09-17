@@ -6,3 +6,5 @@ SCHEDULED: <2026-09-18 Fri 10:15>
 SCHEDULED: <2026-09-18 Fri 09:30>
 *** TODO Look at the bills and them to the agenda
 SCHEDULED: <2026-09-18 Fri 21:25>
+*** TODO Mow the lawn
+SCHEDULED: <2026-09-18 Fri 12:30>
