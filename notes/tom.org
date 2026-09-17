@@ -28,7 +28,7 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-08-28 Fri 16:00>
 ** Completed Tasks
 ** Bills
-*** TODO Pay the rates 
+*** DONE Pay the rates 
 SCHEDULED: <2026-09-18 Fri>
 ** Notes
 *** Trip to Adelaide
