@@ -15,6 +15,7 @@ SCHEDULED: <2026-09-22 Tue>
 *** DONE Remember to weigh yourself
 SCHEDULED: <2026-08-28 Fri>
 ** Events
+*** Board Meeting 
 *** Meet with Ichtus
 <2026-08-28 Fri 16:00>
 *** Start our trip fly to Adelaide
