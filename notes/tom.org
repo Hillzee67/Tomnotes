@@ -26,7 +26,8 @@ SCHEDULED: <2026-08-29 Sat>
 SCHEDULED: <2026-08-26 Wed>
 *** Athletics carnival
 <2026-08-28 Fri>
-*** Board meeting
+*** Holidays begin
+<2026-09-26 Sat>
 ** Completed Tasks
 ** Bills
 *** DONE Pay the rates 
