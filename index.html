@@ -146,6 +146,8 @@
   .cm-emph-underline{text-decoration:underline;}
   .cm-emph-code{font-family:var(--mono); background:rgba(255,255,255,.07); padding:0 3px; border-radius:3px;}
   .cm-emph-strike{text-decoration:line-through; opacity:.65;}
+  .cm-table-pipe{color:var(--text-dim);}
+  .cm-table-sep{color:var(--line);}
   .cm-searching{background:rgba(217,180,106,.25);}
   .outline-node{}
   .outline-row{
@@ -734,6 +736,7 @@ function renderEditorPane(path){
         <button class="ghost" onclick="openDatePicker()">📅 pick date</button>
         <button class="ghost" onclick="openEventTimePicker()">🕐 event w/ time</button>
         <button class="ghost" onclick="openImagePicker()">🖼 add image</button>
+        <button class="ghost" onclick="insertTableTemplate()">▦ table</button>
       </div>
       <div id="editor-cm"></div>`;
     initRawEditor(content, path);
@@ -752,16 +755,21 @@ CodeMirror.defineMode('org-highlight', function(){
     {re: /^\+([^\s+](?:[^+]*[^\s+])?)\+/, cls: 'emph-strike'}
   ];
   return {
-    startState: function(){ return {headlineMatch: null, level: null}; },
+    startState: function(){ return {headlineMatch: null, level: null, isTableSep: false}; },
     token: function(stream, state){
       if (stream.sol()){
         state.headlineMatch = stream.string.match(/^(\*+)(\s+)(TODO|NEXT|WAITING|DONE|CANCELLED)?/);
         state.level = state.headlineMatch ? Math.min(state.headlineMatch[1].length, 4) : null;
+        state.isTableSep = !state.headlineMatch && isTableSepRow(stream.string);
       }
       const m = state.headlineMatch;
       const pos = stream.pos;
       const levelCls = state.level ? ('level-' + state.level) : null;
 
+      if (!m && state.isTableSep && pos === 0){
+        stream.skipToEnd();
+        return 'table-sep'; // the |----+----| divider row, dimmed as one unit
+      }
       if (m && pos === 0){
         stream.pos = m[1].length;
         return levelCls; // stars: color + size for this heading level
@@ -779,6 +787,10 @@ CodeMirror.defineMode('org-highlight', function(){
       // Remaining text — the heading's title, or a plain body line. Check
       // for an org emphasis span starting right here.
       const rest = stream.string.slice(stream.pos);
+      if (rest[0] === '|'){
+        stream.pos += 1;
+        return levelCls ? (levelCls + ' table-pipe') : 'table-pipe'; // dim the pipe so cell content stands out
+      }
       for (const p of emphasisPatterns){
         const em = rest.match(p.re);
         if (em){
@@ -803,7 +815,14 @@ function initRawEditor(content, path){
   });
   cmInstance.setOption('extraKeys', {
     'Ctrl-Alt-T': cm => toggleTodoAtCursor(cm),
-    'Ctrl-Alt-E': cm => insertEventAtCursor(cm)
+    'Ctrl-Alt-E': cm => insertEventAtCursor(cm),
+    'Tab': cm => {
+      if (isTableLine(cm.getLine(cm.getCursor().line))){
+        alignTable(cm);
+        return;
+      }
+      return CodeMirror.Pass; // not in a table — use CodeMirror's normal Tab behavior
+    }
   });
   let reconcileTimer = null;
   const reconcile = () => {
@@ -1067,6 +1086,65 @@ function jumpToLine(path, lineIndex){
   window._jumpToLine = lineIndex;
   editorView = 'raw';
   renderEditorPane(path);
+}
+
+/* ---------- org tables ---------- */
+function isTableLine(text){
+  return /^\s*\|/.test(text);
+}
+
+function isTableSepRow(text){
+  const t = text.trim();
+  return t.length > 0 && /^\|[\-+:|\s]*\|?$/.test(t) && t.indexOf('-') !== -1;
+}
+
+function parseTableRow(text){
+  const inner = text.trim().replace(/^\|/, '').replace(/\|$/, '');
+  return inner.split('|').map(c => c.trim());
+}
+
+function findTableBlock(cm, line){
+  let start = line, end = line;
+  while (start > 0 && isTableLine(cm.getLine(start - 1))) start--;
+  while (end < cm.lastLine() && isTableLine(cm.getLine(end + 1))) end++;
+  return {start, end};
+}
+
+// Recomputes column widths across the whole table block and rewrites every
+// row (including separator rows) so the pipes line up. Triggered by Tab
+// while the cursor is on a table line — never runs outside that, so it
+// can't affect typing performance elsewhere.
+function alignTable(cm){
+  const pos = cm.getCursor();
+  const {start, end} = findTableBlock(cm, pos.line);
+  const rawRows = [];
+  for (let i = start; i <= end; i++) rawRows.push(cm.getLine(i));
+  const parsed = rawRows.map(r => isTableSepRow(r) ? null : parseTableRow(r));
+  const colCount = Math.max(1, ...parsed.filter(Boolean).map(r => r.length));
+  const widths = new Array(colCount).fill(3);
+  parsed.forEach(r => { if (r) r.forEach((c, i) => { widths[i] = Math.max(widths[i], c.length); }); });
+  const newRows = rawRows.map((r, idx) => {
+    if (isTableSepRow(r)) return '|' + widths.map(w => '-'.repeat(w + 2)).join('+') + '|';
+    const cells = parsed[idx] || [];
+    return '|' + widths.map((w, i) => ' ' + (cells[i] || '').padEnd(w) + ' ').join('|') + '|';
+  });
+  cm.operation(() => {
+    for (let i = start; i <= end; i++){
+      const newLine = newRows[i - start];
+      if (cm.getLine(i) !== newLine){
+        cm.replaceRange(newLine, {line: i, ch: 0}, {line: i, ch: cm.getLine(i).length});
+      }
+    }
+  });
+}
+
+function insertTableTemplate(){
+  if (!cmInstance) return;
+  const pos = cmInstance.getCursor();
+  const lineLen = cmInstance.getLine(pos.line).length;
+  const template = '\n| Column 1 | Column 2 | Column 3 |\n|----------+----------+----------|\n|          |          |          |\n';
+  cmInstance.replaceRange(template, {line: pos.line, ch: lineLen});
+  cmInstance.focus();
 }
 
 /* ---------- editor keyboard shortcuts (operate on the CodeMirror instance) ---------- */
