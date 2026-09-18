@@ -919,10 +919,13 @@ function headlineKeyAtLine(cm, path, lineIndex){
 // internal fold markers to survive edits, we treat the persisted set as the
 // source of truth and re-apply it after every change.
 function applyPersistedFolds(cm, path){
+  const cursorLine = cm.getCursor().line;
   const lineCount = cm.lineCount();
   for (let i = 0; i < lineCount; i++){
     const key = headlineKeyAtLine(cm, path, i);
     if (key && outlineCollapsed.has(key)){
+      const range = orgRangeFinder(cm, CodeMirror.Pos(i, 0));
+      if (range && cursorLine >= range.from.line && cursorLine <= range.to.line) continue; // cursor is inside — leave it visible for now
       cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: orgRangeFinder}, 'fold');
     }
   }
@@ -989,10 +992,15 @@ function doneRangeFinder(cm, start){
 // unmodified text regardless of what's currently hidden — so toggling this
 // can never lose or alter any content, saved or not.
 function applyHideDoneFolds(cm){
+  const cursorLine = cm.getCursor().line;
   const lineCount = cm.lineCount();
   for (let i = 0; i < lineCount; i++){
     const line = cm.getLine(i);
     if (!/^\*+\s+(DONE|CANCELLED)\b/.test(line)) continue;
+    if (hideDoneItems){
+      const range = doneRangeFinder(cm, CodeMirror.Pos(i, 0));
+      if (range && cursorLine >= range.from.line && cursorLine <= range.to.line) continue; // cursor is inside — don't hide it mid-edit
+    }
     cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: ''}, hideDoneItems ? 'fold' : 'unfold');
   }
 }
