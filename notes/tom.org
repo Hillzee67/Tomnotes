@@ -32,8 +32,13 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-09-26 Sat>
 ** Completed Tasks
 ** Bills
-*** DONE Pay the rates 
-SCHEDULED: <2026-09-18 Fri>
+*** DONE Pay the rates 1 $643 
+SCHEDULED: <2026-09-18> 
+*** Bills Totals
+
+|Date |Bill | Cost |
+|----------+----------+----------|
+|          |          |          
 ** Notes
 *** Trip to Adelaide
 **** Day 1
