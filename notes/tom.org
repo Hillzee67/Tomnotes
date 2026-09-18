@@ -33,6 +33,11 @@ SCHEDULED: <2026-08-26 Wed>
 ** Completed Tasks
 ** Bills
 
+| Date      | Bill    | Cost |
+|-----------+---------+------|
+| 18/9/2026 | Rates 1 | 643  |
+|           |         |      |
+
 *** DONE Pay the rates 1 $643 
 SCHEDULED: <2026-09-18> 
 *** Bills Totals
