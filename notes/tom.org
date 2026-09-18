@@ -33,11 +33,13 @@ SCHEDULED: <2026-08-26 Wed>
 ** Completed Tasks
 ** Bills
 
-| Date    | Bill    | Cost |
-|---------+---------+------|
-| 18/9/26 | Rates 1 | 643  |
-| 19/9/26 | Test    | 532  |
-| Total   |         |      |
+| Date    | Bill    | Cost    |
+|---------+---------+---------|
+| 18/9/26 | Rates 1 | 643     |
+| 25/9/26 | Water   | 342.19  |
+| 25/9/26 | Power   | 342     |
+
+| Total   |         | 1327.19 |
 
 *** DONE Pay the rates 1 $643 
 SCHEDULED: <2026-09-18> 
