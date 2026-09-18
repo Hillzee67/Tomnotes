@@ -737,6 +737,7 @@ function renderEditorPane(path){
         <button class="ghost" onclick="openEventTimePicker()">🕐 event w/ time</button>
         <button class="ghost" onclick="openImagePicker()">🖼 add image</button>
         <button class="ghost" onclick="insertTableTemplate()">▦ table</button>
+        <button class="ghost" onclick="sumTable()">Σ sum</button>
       </div>
       <div id="editor-cm"></div>`;
     initRawEditor(content, path);
@@ -1159,6 +1160,69 @@ function insertTableTemplate(){
   const lineLen = cmInstance.getLine(pos.line).length;
   const template = '\n| Column 1 | Column 2 | Column 3 |\n|----------+----------+----------|\n|          |          |          |\n';
   cmInstance.replaceRange(template, {line: pos.line, ch: lineLen});
+  cmInstance.focus();
+}
+
+// Sums each numeric column in the table the cursor is in, writing (or
+// updating, if one already exists) a "Total" row at the bottom. This is a
+// one-shot calculation, not a live formula — press the button again after
+// editing numbers to refresh it.
+function computeTableTotals(cm, pos){
+  if (!isTableLine(cm.getLine(pos.line))) return false;
+  const {start, end} = findTableBlock(cm, pos.line);
+  const rows = [];
+  for (let i = start; i <= end; i++) rows.push(cm.getLine(i));
+
+  const sepRelIdx = rows.findIndex(isTableSepRow);
+  const dataStartRel = sepRelIdx === -1 ? 0 : sepRelIdx + 1;
+
+  const lastRel = rows.length - 1;
+  let hasTotalRow = false;
+  if (!isTableSepRow(rows[lastRel])){
+    const cells = parseTableRow(rows[lastRel]);
+    if (cells[0] && /^(total|sum)s?$/i.test(cells[0].trim())) hasTotalRow = true;
+  }
+  const dataEndRel = hasTotalRow ? lastRel - 1 : lastRel;
+
+  const colSums = [];
+  let colCount = 0;
+  for (let i = dataStartRel; i <= dataEndRel; i++){
+    const r = rows[i];
+    if (isTableSepRow(r)) continue;
+    const cells = parseTableRow(r);
+    colCount = Math.max(colCount, cells.length);
+    cells.forEach((c, ci) => {
+      const num = parseFloat(String(c).replace(/,/g, ''));
+      if (!isNaN(num)) colSums[ci] = (colSums[ci] || 0) + num;
+    });
+  }
+  if (colCount === 0) return false;
+
+  const fmt = n => n === undefined ? '' : (Number.isInteger(n) ? String(n) : n.toFixed(2));
+  const totalCells = new Array(colCount).fill('');
+  totalCells[0] = 'Total';
+  for (let ci = 1; ci < colCount; ci++) totalCells[ci] = fmt(colSums[ci]);
+  const totalLine = '| ' + totalCells.join(' | ') + ' |';
+
+  cm.operation(() => {
+    if (hasTotalRow){
+      const lineNo = start + lastRel;
+      cm.replaceRange(totalLine, {line: lineNo, ch: 0}, {line: lineNo, ch: cm.getLine(lineNo).length});
+    } else {
+      cm.replaceRange('\n' + totalLine, {line: end, ch: cm.getLine(end).length});
+    }
+  });
+  return true;
+}
+
+function sumTable(){
+  if (!cmInstance) return;
+  const pos = cmInstance.getCursor();
+  if (!computeTableTotals(cmInstance, pos)){
+    setStatus('err', 'place cursor inside a table with numbers first');
+    return;
+  }
+  alignTable(cmInstance);
   cmInstance.focus();
 }
 
