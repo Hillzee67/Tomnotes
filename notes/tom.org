@@ -32,10 +32,14 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-09-26 Sat>
 ** Completed Tasks
 ** Bills
+
 *** DONE Pay the rates 1 $643 
 SCHEDULED: <2026-09-18> 
 *** Bills Totals
-
+*** TODO Power Bill - $342
+SCHEDULED: <2026-09-24 Thu>
+*** TODO Water Bill - $342.14
+SCHEDULED: <2026-09-24 Thu>
 ** Notes
 *** Trip to Adelaide
 **** Day 1
