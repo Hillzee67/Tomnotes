@@ -798,7 +798,14 @@ CodeMirror.defineMode('org-highlight', function(){
           return levelCls ? (levelCls + ' ' + p.cls) : p.cls;
         }
       }
-      stream.next();
+      // Consume up to the next character that could start something special
+      // (a pipe or an emphasis marker) in one go, rather than one character
+      // at a time — tokenizing char-by-char was generating a huge number of
+      // tiny spans on longer lines (especially padded table rows), which is
+      // exactly the kind of extra rendering work that can make an editor
+      // stutter or visibly lag during typing.
+      const nextSpecial = rest.slice(1).search(/[|*/_=~+]/);
+      stream.pos = nextSpecial === -1 ? stream.string.length : stream.pos + 1 + nextSpecial;
       return levelCls; // plain title text still gets the heading's size; plain body text gets null
     }
   };
