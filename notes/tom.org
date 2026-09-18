@@ -36,9 +36,6 @@ SCHEDULED: <2026-08-26 Wed>
 SCHEDULED: <2026-09-18> 
 *** Bills Totals
 
-|Date |Bill | Cost |
-|----------+----------+----------|
-|          |          |          
 ** Notes
 *** Trip to Adelaide
 **** Day 1
