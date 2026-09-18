@@ -2,7 +2,7 @@
 
 *** DONE Sort out the library books
 SCHEDULED: <2026-09-18 Fri 10:15>
-*** TODO Pay the first part of the rates
+*** DONE Pay the first part of the rates
 SCHEDULED: <2026-09-18 Fri 09:30>
 *** TODO Look at the bills and them to the agenda
 SCHEDULED: <2026-09-18 Fri 21:25>
