@@ -162,6 +162,37 @@
   .outline-title{font-size:13.5px; flex:1; min-width:0; overflow-wrap:anywhere;}
   .outline-title.todo-open{color:var(--blue);}
   .outline-date{font-family:var(--mono); font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
+  .present-btn{
+    flex-shrink:0; background:transparent; border:1px solid var(--line); color:var(--accent);
+    border-radius:5px; width:24px; height:24px; font-size:10px; cursor:pointer; padding:0;
+  }
+  .present-overlay{
+    display:none; position:fixed; inset:0; z-index:30; background:var(--bg);
+    flex-direction:column;
+  }
+  .present-overlay.open{display:flex;}
+  .present-topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; font-family:var(--mono); font-size:12px; color:var(--text-dim);
+    border-bottom:1px solid var(--line);
+  }
+  .present-slide{
+    flex:1; display:flex; flex-direction:column; justify-content:center;
+    padding:8vh 8vw; overflow-y:auto;
+  }
+  .present-slide h2{
+    font-family:var(--mono); color:var(--gold); font-size:clamp(24px,5vw,40px);
+    margin:0 0 28px 0; font-weight:700;
+  }
+  .present-body p{font-size:clamp(16px,2.6vw,22px); line-height:1.6; margin:0 0 14px 0;}
+  .present-body ul{margin:8px 0 0 0; padding-left:22px;}
+  .present-body li{font-size:clamp(15px,2.3vw,19px); line-height:1.7; color:var(--text-dim);}
+  .present-nav{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom)) 16px;
+    border-top:1px solid var(--line);
+  }
+  .present-nav button{flex:1;}
   .badge{
     font-family:var(--mono); font-size:9.5px; font-weight:600; letter-spacing:.04em;
     padding:2px 5px; border-radius:4px; flex-shrink:0;
@@ -254,6 +285,18 @@
       <button class="primary" onclick="submitEventAdd()">Insert</button>
       <button class="ghost" onclick="closeEventAdd()">Cancel</button>
     </div>
+  </div>
+</div>
+
+<div class="present-overlay" id="present-overlay">
+  <div class="present-topbar">
+    <span id="present-counter"></span>
+    <button class="ghost" onclick="closePresent()">✕ exit</button>
+  </div>
+  <div class="present-slide" id="present-slide"></div>
+  <div class="present-nav">
+    <button class="ghost" onclick="presentPrev()">‹ prev</button>
+    <button class="ghost" onclick="presentNext()">next ›</button>
   </div>
 </div>
 
@@ -1065,6 +1108,99 @@ function buildOutlineTree(content){
   return root.children;
 }
 
+/* ---------- presentation mode ---------- */
+function headlineTitleFromLine(line){
+  const m = line.match(HEADLINE_RE);
+  return m ? (m[4] || '').trim() : line.trim();
+}
+
+// Turns a headline's subtree into slides: one slide per direct child, using
+// that child's own body text as the slide content and any of *its*
+// children's titles as bullet points. If the chosen headline has no
+// children, its own body becomes a single slide instead.
+function buildSlidesFromHeadline(content, rootLine){
+  const lines = content.split('\n');
+  const rootMatch = lines[rootLine].match(/^(\*+)\s/);
+  if (!rootMatch) return [];
+  const rootLevel = rootMatch[1].length;
+  const lastLine = lines.length - 1;
+
+  let subtreeEnd = rootLine;
+  for (let i = rootLine + 1; i <= lastLine; i++){
+    const m = lines[i].match(/^(\*+)\s/);
+    if (m && m[1].length <= rootLevel) break;
+    subtreeEnd = i;
+  }
+
+  const isMeta = line => /^\s*(SCHEDULED|DEADLINE):/.test(line) || /^\s*<\d{4}-\d{2}-\d{2}/.test(line);
+
+  const childIndices = [];
+  for (let i = rootLine + 1; i <= subtreeEnd; i++){
+    const m = lines[i].match(/^(\*+)\s/);
+    if (m && m[1].length === rootLevel + 1) childIndices.push(i);
+  }
+
+  if (!childIndices.length){
+    const bodyLines = [];
+    for (let i = rootLine + 1; i <= subtreeEnd; i++){
+      const line = lines[i];
+      if (isMeta(line)) continue;
+      if (line.trim()) bodyLines.push(line.trim());
+    }
+    return [{title: headlineTitleFromLine(lines[rootLine]), bodyLines, bullets: []}];
+  }
+
+  return childIndices.map((ci, idx) => {
+    const childEnd = idx + 1 < childIndices.length ? childIndices[idx + 1] - 1 : subtreeEnd;
+    const bodyLines = [], bullets = [];
+    for (let i = ci + 1; i <= childEnd; i++){
+      const line = lines[i];
+      const hm = line.match(HEADLINE_RE);
+      if (hm){ bullets.push(hm[4].trim()); continue; } // a grandchild headline shown as a bullet
+      if (isMeta(line)) continue;
+      const trimmed = line.trim();
+      if (trimmed) bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
+    }
+    return {title: headlineTitleFromLine(lines[ci]), bodyLines, bullets};
+  });
+}
+
+let presentSlides = [];
+let presentIndex = 0;
+
+function startPresent(path, lineIndex){
+  const content = fileCache[path] ? fileCache[path].content : null;
+  if (!content) return;
+  presentSlides = buildSlidesFromHeadline(content, lineIndex);
+  if (!presentSlides.length){ setStatus('err', 'nothing to present here'); return; }
+  presentIndex = 0;
+  document.getElementById('present-overlay').classList.add('open');
+  renderPresentSlide();
+}
+
+function closePresent(){
+  document.getElementById('present-overlay').classList.remove('open');
+}
+
+function renderPresentSlide(){
+  const s = presentSlides[presentIndex];
+  document.getElementById('present-counter').textContent = `${presentIndex + 1} / ${presentSlides.length}`;
+  const paras = s.bodyLines.map(l => `<p>${escapeHtml(l)}</p>`).join('');
+  const list = s.bullets.length ? `<ul>${s.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
+  document.getElementById('present-slide').innerHTML =
+    `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}</div>`;
+}
+
+function presentNext(){ if (presentIndex < presentSlides.length - 1){ presentIndex++; renderPresentSlide(); } }
+function presentPrev(){ if (presentIndex > 0){ presentIndex--; renderPresentSlide(); } }
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('present-overlay').classList.contains('open')) return;
+  if (e.key === 'ArrowRight' || e.key === ' '){ e.preventDefault(); presentNext(); }
+  else if (e.key === 'ArrowLeft'){ e.preventDefault(); presentPrev(); }
+  else if (e.key === 'Escape'){ closePresent(); }
+});
+
 function renderOutlineNodes(nodes, path){
   return nodes.map(n => {
     const key = path + '::' + n.level + '::' + n.title;
@@ -1079,12 +1215,16 @@ function renderOutlineNodes(nodes, path){
     const dateLabel = (n.deadline ? `deadline ${n.deadline}` : (n.scheduled ? `scheduled ${n.scheduled}` : '')) + (n.repeat ? ` · ${repeatLabel(n.repeat)}` : '');
     const indent = (n.level - 1) * 18;
     const childrenHtml = hasChildren && !collapsed ? `<div class="outline-children">${renderOutlineNodes(n.children, path)}</div>` : '';
+    const presentBtn = hasChildren
+      ? `<button class="present-btn" title="Present from here" onclick="event.stopPropagation();startPresent('${path.replace(/'/g,"\\'")}', ${n.lineIndex})">▶</button>`
+      : '';
     return `<div class="outline-node" style="margin-left:${indent}px;">
       <div class="outline-row" onclick="jumpToLine('${path.replace(/'/g,"\\'")}', ${n.lineIndex})">
         ${caret}
         ${stateBadge}
         <span class="${titleClass}">${escapeHtml(n.title) || '<span class=\"empty\" style=\"display:inline\">(untitled)</span>'}</span>
         ${dateLabel ? `<span class="outline-date">${dateLabel}</span>` : ''}
+        ${presentBtn}
       </div>
       ${childrenHtml}
     </div>`;
