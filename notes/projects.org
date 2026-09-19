@@ -1,7 +1,22 @@
+* Home
+** The Kitchen
+*** TODO Kitchen - email the guy and see if he can still do the job
+<2026-09-22 Tue>
+*** TODO Kitchen - start taking off the doors, draws and panels.
+*** TODO Kitchen - work out what to do with the harder panels.
+** Retic
+** Ethan's Retic
+** Tax
+*** TODO - Tax - book an appointment with Bob
+<2026-09-22 Tue>
+*** TODO - Tax - get my receipts sorted.
+*** TODO - Tax - let the others know if they are interested.
+* Work
 ** Naplan
+** PAT testing
 ** Classlists
 ** Timetables
 ** Operational Plans
 ** Karoke
 ** Reading Assessment
-** PAT testing
+
