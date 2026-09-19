@@ -187,6 +187,8 @@
   .present-body p{font-size:clamp(16px,2.6vw,22px); line-height:1.6; margin:0 0 14px 0;}
   .present-body ul{margin:8px 0 0 0; padding-left:22px;}
   .present-body li{font-size:clamp(15px,2.3vw,19px); line-height:1.7; color:var(--text-dim);}
+  .present-images{display:flex; flex-wrap:wrap; gap:14px; margin-top:22px;}
+  .present-img{max-width:100%; max-height:48vh; border-radius:10px; display:block;}
   .present-nav{
     display:flex; justify-content:space-between; gap:10px;
     padding:14px 16px calc(14px + env(safe-area-inset-bottom)) 16px;
@@ -1133,6 +1135,7 @@ function buildSlidesFromHeadline(content, rootLine){
   }
 
   const isMeta = line => /^\s*(SCHEDULED|DEADLINE):/.test(line) || /^\s*<\d{4}-\d{2}-\d{2}/.test(line);
+  const imageLinkRe = /^\[\[([^\]]+\.(?:png|jpe?g|gif|webp))\]\]$/i;
 
   const childIndices = [];
   for (let i = rootLine + 1; i <= subtreeEnd; i++){
@@ -1141,32 +1144,40 @@ function buildSlidesFromHeadline(content, rootLine){
   }
 
   if (!childIndices.length){
-    const bodyLines = [];
+    const bodyLines = [], images = [];
     for (let i = rootLine + 1; i <= subtreeEnd; i++){
       const line = lines[i];
       if (isMeta(line)) continue;
-      if (line.trim()) bodyLines.push(line.trim());
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const im = trimmed.match(imageLinkRe);
+      if (im){ images.push(im[1]); continue; }
+      bodyLines.push(trimmed);
     }
-    return [{title: headlineTitleFromLine(lines[rootLine]), bodyLines, bullets: []}];
+    return [{title: headlineTitleFromLine(lines[rootLine]), bodyLines, bullets: [], images}];
   }
 
   return childIndices.map((ci, idx) => {
     const childEnd = idx + 1 < childIndices.length ? childIndices[idx + 1] - 1 : subtreeEnd;
-    const bodyLines = [], bullets = [];
+    const bodyLines = [], bullets = [], images = [];
     for (let i = ci + 1; i <= childEnd; i++){
       const line = lines[i];
       const hm = line.match(HEADLINE_RE);
       if (hm){ bullets.push(hm[4].trim()); continue; } // a grandchild headline shown as a bullet
       if (isMeta(line)) continue;
       const trimmed = line.trim();
-      if (trimmed) bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
+      if (!trimmed) continue;
+      const im = trimmed.match(imageLinkRe);
+      if (im){ images.push(im[1]); continue; }
+      bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
     }
-    return {title: headlineTitleFromLine(lines[ci]), bodyLines, bullets};
+    return {title: headlineTitleFromLine(lines[ci]), bodyLines, bullets, images};
   });
 }
 
 let presentSlides = [];
 let presentIndex = 0;
+let presentRenderToken = 0;
 
 function startPresent(path, lineIndex){
   const content = fileCache[path] ? fileCache[path].content : null;
@@ -1184,11 +1195,26 @@ function closePresent(){
 
 function renderPresentSlide(){
   const s = presentSlides[presentIndex];
+  const myToken = ++presentRenderToken;
   document.getElementById('present-counter').textContent = `${presentIndex + 1} / ${presentSlides.length}`;
   const paras = s.bodyLines.map(l => `<p>${escapeHtml(l)}</p>`).join('');
   const list = s.bullets.length ? `<ul>${s.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
   document.getElementById('present-slide').innerHTML =
-    `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}</div>`;
+    `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}<div class="present-images" id="present-images"></div></div>`;
+
+  (s.images || []).forEach(async imgPath => {
+    try{
+      const dataUrl = await ghGetImageDataUrl(imgPath);
+      if (myToken !== presentRenderToken) return; // navigated to another slide before this loaded
+      const img = document.createElement('img');
+      img.className = 'present-img';
+      img.src = dataUrl;
+      const container = document.getElementById('present-images');
+      if (container) container.appendChild(img);
+    }catch(e){
+      console.error('present image failed to load:', imgPath, e);
+    }
+  });
 }
 
 function presentNext(){ if (presentIndex < presentSlides.length - 1){ presentIndex++; renderPresentSlide(); } }
