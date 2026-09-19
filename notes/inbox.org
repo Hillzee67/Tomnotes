@@ -9,3 +9,5 @@ SCHEDULED: <2026-09-18 Fri 09:30>
 SCHEDULED: <2026-09-18 Fri 21:25>
 *** TODO Mow the lawn
 SCHEDULED: <2026-09-19 Sat 12:30>
+*** TODO Take the recycling
+SCHEDULED: <2026-09-20 Sun 11:00>
