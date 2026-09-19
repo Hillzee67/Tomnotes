@@ -187,6 +187,7 @@
   .present-body p{font-size:clamp(16px,2.6vw,22px); line-height:1.6; margin:0 0 14px 0;}
   .present-body ul{margin:8px 0 0 0; padding-left:22px;}
   .present-body li{font-size:clamp(15px,2.3vw,19px); line-height:1.7; color:var(--text-dim);}
+  .present-body li ul li{font-size:clamp(13px,2vw,16px); opacity:.85;}
   .present-images{display:flex; flex-wrap:wrap; gap:14px; margin-top:22px;}
   .present-img{max-width:100%; max-height:48vh; border-radius:10px; display:block;}
   .present-table{border-collapse:collapse; width:100%; margin-top:22px; font-family:var(--mono); font-size:clamp(13px,1.8vw,16px);}
@@ -1154,10 +1155,14 @@ function buildSlidesFromHeadline(content, rootLine){
     return {headerRows, dataRows};
   }
 
-  // Walks a line range, splitting it into body paragraphs, bullets (from
-  // grandchild headlines), image links, and table blocks.
-  function collectSectionContent(fromLine, toLine){
-    const bodyLines = [], bullets = [], images = [], tables = [];
+  // Walks a line range, splitting it into body paragraphs, a nested bullet
+  // tree (from any depth of sub-headlines, not just the immediate level),
+  // image links, and table blocks. baseLevel is the heading level of the
+  // section itself, so anything found here is baseLevel+1 or deeper.
+  function collectSectionContent(fromLine, toLine, baseLevel){
+    const bodyLines = [], images = [], tables = [];
+    const bulletRoot = {level: baseLevel, children: []};
+    const bulletStack = [bulletRoot];
     let tableBuffer = [];
     const flushTable = () => {
       if (tableBuffer.length){ tables.push(parseTableBlock(tableBuffer)); tableBuffer = []; }
@@ -1167,8 +1172,16 @@ function buildSlidesFromHeadline(content, rootLine){
       const trimmed = line.trim();
       if (isTableLine(trimmed)){ tableBuffer.push(trimmed); continue; }
       flushTable();
-      const hm = line.match(HEADLINE_RE);
-      if (hm){ bullets.push(hm[4].trim()); continue; } // a grandchild headline shown as a bullet
+      const levelMatch = line.match(/^(\*+)\s/);
+      if (levelMatch){
+        const hm = line.match(HEADLINE_RE);
+        const level = levelMatch[1].length;
+        const node = {title: (hm ? hm[4] : line.replace(/^\*+\s+/, '')).trim(), level, children: []};
+        while (bulletStack.length && bulletStack[bulletStack.length - 1].level >= level) bulletStack.pop();
+        bulletStack[bulletStack.length - 1].children.push(node);
+        bulletStack.push(node);
+        continue;
+      }
       if (isMeta(line)) continue;
       if (!trimmed) continue;
       const im = trimmed.match(imageLinkRe);
@@ -1176,7 +1189,7 @@ function buildSlidesFromHeadline(content, rootLine){
       bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
     }
     flushTable();
-    return {bodyLines, bullets, images, tables};
+    return {bodyLines, bullets: bulletRoot.children, images, tables};
   }
 
   const childIndices = [];
@@ -1186,12 +1199,12 @@ function buildSlidesFromHeadline(content, rootLine){
   }
 
   if (!childIndices.length){
-    return [{title: headlineTitleFromLine(lines[rootLine]), ...collectSectionContent(rootLine + 1, subtreeEnd)}];
+    return [{title: headlineTitleFromLine(lines[rootLine]), ...collectSectionContent(rootLine + 1, subtreeEnd, rootLevel)}];
   }
 
   return childIndices.map((ci, idx) => {
     const childEnd = idx + 1 < childIndices.length ? childIndices[idx + 1] - 1 : subtreeEnd;
-    return {title: headlineTitleFromLine(lines[ci]), ...collectSectionContent(ci + 1, childEnd)};
+    return {title: headlineTitleFromLine(lines[ci]), ...collectSectionContent(ci + 1, childEnd, rootLevel + 1)};
   });
 }
 
@@ -1221,12 +1234,20 @@ function renderTableHtml(t){
   return `<table class="present-table">${thead}${tbody}</table>`;
 }
 
+// Renders a bullet tree of any depth — a bullet's own children (if any)
+// nest as a sub-list inside its <li>, so sub-headlines several levels deep
+// all show up, not just the first level under the slide's own heading.
+function renderBulletsHtml(nodes){
+  if (!nodes || !nodes.length) return '';
+  return `<ul>${nodes.map(n => `<li>${escapeHtml(n.title)}${renderBulletsHtml(n.children)}</li>`).join('')}</ul>`;
+}
+
 function renderPresentSlide(){
   const s = presentSlides[presentIndex];
   const myToken = ++presentRenderToken;
   document.getElementById('present-counter').textContent = `${presentIndex + 1} / ${presentSlides.length}`;
   const paras = s.bodyLines.map(l => `<p>${escapeHtml(l)}</p>`).join('');
-  const list = s.bullets.length ? `<ul>${s.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
+  const list = renderBulletsHtml(s.bullets);
   const tables = (s.tables || []).map(renderTableHtml).join('');
   document.getElementById('present-slide').innerHTML =
     `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}${tables}<div class="present-images" id="present-images"></div></div>`;
