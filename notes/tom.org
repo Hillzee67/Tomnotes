@@ -23,6 +23,7 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-09-26 Sat>
 ** Completed Tasks
 ** Bills
+*** Overall Bills
 | Date    | Bill    | Cost    |
 |---------+---------+---------|
 | 18/9/26 | Rates 1 | 643     |
