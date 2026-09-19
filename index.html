@@ -189,6 +189,10 @@
   .present-body li{font-size:clamp(15px,2.3vw,19px); line-height:1.7; color:var(--text-dim);}
   .present-images{display:flex; flex-wrap:wrap; gap:14px; margin-top:22px;}
   .present-img{max-width:100%; max-height:48vh; border-radius:10px; display:block;}
+  .present-table{border-collapse:collapse; width:100%; margin-top:22px; font-family:var(--mono); font-size:clamp(13px,1.8vw,16px);}
+  .present-table th, .present-table td{border:1px solid var(--line); padding:8px 14px; text-align:left;}
+  .present-table th{background:var(--panel); color:var(--gold); font-weight:600;}
+  .present-table tbody tr:nth-child(even){background:rgba(255,255,255,.03);}
   .present-nav{
     display:flex; justify-content:space-between; gap:10px;
     padding:14px 16px calc(14px + env(safe-area-inset-bottom)) 16px;
@@ -1137,6 +1141,44 @@ function buildSlidesFromHeadline(content, rootLine){
   const isMeta = line => /^\s*(SCHEDULED|DEADLINE):/.test(line) || /^\s*<\d{4}-\d{2}-\d{2}/.test(line);
   const imageLinkRe = /^\[\[([^\]]+\.(?:png|jpe?g|gif|webp))\]\]$/i;
 
+  // Groups consecutive table lines into a structured {headerRows, dataRows}
+  // table object — rows above the first divider become the header.
+  function parseTableBlock(tableLines){
+    const sepIdx = tableLines.findIndex(isTableSepRow);
+    const headerRows = [], dataRows = [];
+    tableLines.forEach((l, i) => {
+      if (isTableSepRow(l)) return;
+      const cells = parseTableRow(l);
+      (sepIdx !== -1 && i < sepIdx ? headerRows : dataRows).push(cells);
+    });
+    return {headerRows, dataRows};
+  }
+
+  // Walks a line range, splitting it into body paragraphs, bullets (from
+  // grandchild headlines), image links, and table blocks.
+  function collectSectionContent(fromLine, toLine){
+    const bodyLines = [], bullets = [], images = [], tables = [];
+    let tableBuffer = [];
+    const flushTable = () => {
+      if (tableBuffer.length){ tables.push(parseTableBlock(tableBuffer)); tableBuffer = []; }
+    };
+    for (let i = fromLine; i <= toLine; i++){
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (isTableLine(trimmed)){ tableBuffer.push(trimmed); continue; }
+      flushTable();
+      const hm = line.match(HEADLINE_RE);
+      if (hm){ bullets.push(hm[4].trim()); continue; } // a grandchild headline shown as a bullet
+      if (isMeta(line)) continue;
+      if (!trimmed) continue;
+      const im = trimmed.match(imageLinkRe);
+      if (im){ images.push(im[1]); continue; }
+      bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
+    }
+    flushTable();
+    return {bodyLines, bullets, images, tables};
+  }
+
   const childIndices = [];
   for (let i = rootLine + 1; i <= subtreeEnd; i++){
     const m = lines[i].match(/^(\*+)\s/);
@@ -1144,34 +1186,12 @@ function buildSlidesFromHeadline(content, rootLine){
   }
 
   if (!childIndices.length){
-    const bodyLines = [], images = [];
-    for (let i = rootLine + 1; i <= subtreeEnd; i++){
-      const line = lines[i];
-      if (isMeta(line)) continue;
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      const im = trimmed.match(imageLinkRe);
-      if (im){ images.push(im[1]); continue; }
-      bodyLines.push(trimmed);
-    }
-    return [{title: headlineTitleFromLine(lines[rootLine]), bodyLines, bullets: [], images}];
+    return [{title: headlineTitleFromLine(lines[rootLine]), ...collectSectionContent(rootLine + 1, subtreeEnd)}];
   }
 
   return childIndices.map((ci, idx) => {
     const childEnd = idx + 1 < childIndices.length ? childIndices[idx + 1] - 1 : subtreeEnd;
-    const bodyLines = [], bullets = [], images = [];
-    for (let i = ci + 1; i <= childEnd; i++){
-      const line = lines[i];
-      const hm = line.match(HEADLINE_RE);
-      if (hm){ bullets.push(hm[4].trim()); continue; } // a grandchild headline shown as a bullet
-      if (isMeta(line)) continue;
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      const im = trimmed.match(imageLinkRe);
-      if (im){ images.push(im[1]); continue; }
-      bodyLines.push(trimmed.replace(/^[-+]\s+/, ''));
-    }
-    return {title: headlineTitleFromLine(lines[ci]), bodyLines, bullets, images};
+    return {title: headlineTitleFromLine(lines[ci]), ...collectSectionContent(ci + 1, childEnd)};
   });
 }
 
@@ -1193,14 +1213,23 @@ function closePresent(){
   document.getElementById('present-overlay').classList.remove('open');
 }
 
+function renderTableHtml(t){
+  const thead = t.headerRows.length
+    ? `<thead>${t.headerRows.map(r => '<tr>' + r.map(c => `<th>${escapeHtml(c)}</th>`).join('') + '</tr>').join('')}</thead>`
+    : '';
+  const tbody = `<tbody>${t.dataRows.map(r => '<tr>' + r.map(c => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>').join('')}</tbody>`;
+  return `<table class="present-table">${thead}${tbody}</table>`;
+}
+
 function renderPresentSlide(){
   const s = presentSlides[presentIndex];
   const myToken = ++presentRenderToken;
   document.getElementById('present-counter').textContent = `${presentIndex + 1} / ${presentSlides.length}`;
   const paras = s.bodyLines.map(l => `<p>${escapeHtml(l)}</p>`).join('');
   const list = s.bullets.length ? `<ul>${s.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
+  const tables = (s.tables || []).map(renderTableHtml).join('');
   document.getElementById('present-slide').innerHTML =
-    `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}<div class="present-images" id="present-images"></div></div>`;
+    `<h2>${escapeHtml(s.title) || '(untitled)'}</h2><div class="present-body">${paras}${list}${tables}<div class="present-images" id="present-images"></div></div>`;
 
   (s.images || []).forEach(async imgPath => {
     try{
