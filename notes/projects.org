@@ -16,7 +16,7 @@ SCHEDULED: <2026-09-22 Tue>
 * Work
 ** Naplan
 ** PAT testing
-*** TODO - Pat follow up with has been done so far
+*** TODO Pat follow up with has been done so far
 SCHEDULED: <2026-09-21 Mon>
 ** Classlists
 *** TODO Classlists - start to prep the friend selection sheets
@@ -25,6 +25,8 @@ SCHEDULED: <2026-09-21 Mon>
 *** TODO Timetables - Find out if there are any changes to the timetable for next term
 SCHEDULED: <2026-09-21 Mon>
 ** Operational Plans
+*** TODO Op Plans - Find out where the are up to.
+SCHEDULED: <2026-09-21 Mon>
 ** Karoke
 *** TODO Karoke - find out what has been done.
 SCHEDULED: <2026-09-21 Mon>
