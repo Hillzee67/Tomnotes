@@ -643,13 +643,13 @@ function renderAgenda(){
   }
 
   main.innerHTML = `<h1><span class="star">*</span> agenda</h1>` +
-    group('overdue', 'Overdue', overdue) +
-    days +
-    group('unscheduled', 'Unscheduled', unscheduled) +
-    `<div class="row" style="margin-top:16px;">
+    `<div class="row" style="margin-bottom:16px;">
        <button class="ghost" onclick="refreshAgenda()">↻ refresh</button>
        <button class="ghost" onclick="syncCalendar()">☁ sync to calendar</button>
-     </div>`;
+     </div>` +
+    group('overdue', 'Overdue', overdue) +
+    days +
+    group('unscheduled', 'Unscheduled', unscheduled);
 }
 
 function taskRow(t, cls){
