@@ -11,7 +11,7 @@ SCHEDULED: <2026-09-18 Fri 21:25>
 SCHEDULED: <2026-09-19 Sat 12:30>
 *** DONE Take the recycling
 SCHEDULED: <2026-09-20 Sun 11:00>
-*** TODO Food prep
+*** DONE Food prep
 SCHEDULED: <2026-09-20 Sun 03:30>
 *** DONE Ironing
 SCHEDULED: <2026-09-20 Sun 09:00>
