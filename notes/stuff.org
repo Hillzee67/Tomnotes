@@ -3,8 +3,10 @@
 ** Greyhounds
 *** Using R & S to dutch
 
-| Day | Races | Result |
-|-----+-------+--------|
-|  1   |       |        |
+| Day | Races | Wins | Total |
+|-----+-------+------+-------|
+| 1   | 8     | 7    | 28.33 |
+| 2   |       |      |       |
+
 
 
