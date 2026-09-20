@@ -1223,6 +1223,7 @@ function buildSlidesFromHeadline(content, rootLine){
 let presentSlides = [];
 let presentIndex = 0;
 let presentRenderToken = 0;
+let presentRevealCount = 0; // how many of the current slide's top-level bullets are shown
 
 function startPresent(path, lineIndex){
   const content = fileCache[path] ? fileCache[path].content : null;
@@ -1230,6 +1231,7 @@ function startPresent(path, lineIndex){
   presentSlides = buildSlidesFromHeadline(content, lineIndex);
   if (!presentSlides.length){ setStatus('err', 'nothing to present here'); return; }
   presentIndex = 0;
+  presentRevealCount = 0;
   document.getElementById('present-overlay').classList.add('open');
   renderPresentSlide();
 }
@@ -1257,9 +1259,11 @@ function renderBulletsHtml(nodes){
 function renderPresentSlide(){
   const s = presentSlides[presentIndex];
   const myToken = ++presentRenderToken;
-  document.getElementById('present-counter').textContent = `${presentIndex + 1} / ${presentSlides.length}`;
+  const totalBullets = (s.bullets || []).length;
+  const counter = `${presentIndex + 1} / ${presentSlides.length}` + (totalBullets ? ` · ${Math.min(presentRevealCount, totalBullets)}/${totalBullets}` : '');
+  document.getElementById('present-counter').textContent = counter;
   const paras = s.bodyLines.map(l => `<p>${escapeHtml(l)}</p>`).join('');
-  const list = renderBulletsHtml(s.bullets);
+  const list = renderBulletsHtml((s.bullets || []).slice(0, presentRevealCount)); // only top-level bullets are revealed progressively
   const tables = (s.tables || []).map(renderTableHtml).join('');
   const heading = s.isTitle
     ? `<h1 class="present-title-heading">${escapeHtml(s.title) || '(untitled)'}</h1>`
@@ -1282,8 +1286,32 @@ function renderPresentSlide(){
   });
 }
 
-function presentNext(){ if (presentIndex < presentSlides.length - 1){ presentIndex++; renderPresentSlide(); } }
-function presentPrev(){ if (presentIndex > 0){ presentIndex--; renderPresentSlide(); } }
+function presentNext(){
+  const totalBullets = (presentSlides[presentIndex].bullets || []).length;
+  if (presentRevealCount < totalBullets){
+    presentRevealCount++;
+    renderPresentSlide();
+    return;
+  }
+  if (presentIndex < presentSlides.length - 1){
+    presentIndex++;
+    presentRevealCount = 0; // a freshly-entered slide starts with its bullets hidden
+    renderPresentSlide();
+  }
+}
+
+function presentPrev(){
+  if (presentRevealCount > 0){
+    presentRevealCount--;
+    renderPresentSlide();
+    return;
+  }
+  if (presentIndex > 0){
+    presentIndex--;
+    presentRevealCount = (presentSlides[presentIndex].bullets || []).length; // stepping back shows that slide fully built
+    renderPresentSlide();
+  }
+}
 
 document.addEventListener('keydown', e => {
   if (!document.getElementById('present-overlay').classList.contains('open')) return;
