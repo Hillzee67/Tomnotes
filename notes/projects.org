@@ -16,7 +16,7 @@ SCHEDULED: <2026-09-22 Tue>
 * Work
 ** Naplan
 ** PAT testing
-*** TODO Pat follow up with has been done so far
+*** DONE Pat follow up with has been done so far
 SCHEDULED: <2026-09-21 Mon>
 ** Classlists
 *** TODO Classlists - start to prep the friend selection sheets
