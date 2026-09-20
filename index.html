@@ -110,7 +110,7 @@
   }
   .row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
   label{display:block; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin:12px 0 5px 2px; text-transform:uppercase; letter-spacing:.08em;}
-  input[type=text], input[type=password], input[type=date], input[type=time]{
+  input[type=text], input[type=password], input[type=date], input[type=time], select{
     width:100%; background:var(--panel); border:1px solid var(--line); color:var(--text);
     font-family:var(--mono); font-size:13.5px; padding:10px 11px; border-radius:7px;
   }
@@ -246,7 +246,6 @@
     border:1px solid var(--line); border-bottom:none;
     border-radius:14px 14px 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom)) 16px;
   }
-  #quickadd-target{color:var(--accent); font-family:var(--mono);}
   a{color:var(--accent);}
   ::selection{background:var(--accent-dim); color:#0f1210;}
 </style>
@@ -274,8 +273,10 @@
       <button class="primary" id="quickadd-type-task" onclick="setQuickAddType('task')">Task</button>
       <button class="ghost" id="quickadd-type-event" onclick="setQuickAddType('event')">Event</button>
     </div>
-    <div class="empty" style="margin-bottom:8px;"><span id="quickadd-label">New Task</span> → <span id="quickadd-target"></span></div>
+    <div class="empty" style="margin-bottom:8px;"><span id="quickadd-label">New Task</span></div>
     <input type="text" id="quickadd-input" placeholder="What needs doing?" autocomplete="off">
+    <label style="margin-top:10px;">File</label>
+    <select id="quickadd-file"><option>loading files…</option></select>
     <label style="margin-top:10px;" id="quickadd-date-label">Date (optional)</label>
     <input type="date" id="quickadd-date">
     <label style="margin-top:10px;">Time (optional)</label>
@@ -1767,18 +1768,21 @@ function setQuickAddType(type){
   document.getElementById('quickadd-type-task').className = type === 'task' ? 'primary' : 'ghost';
   document.getElementById('quickadd-type-event').className = type === 'event' ? 'primary' : 'ghost';
   document.getElementById('quickadd-label').textContent = type === 'task' ? 'New Task' : 'New Event';
-  document.getElementById('quickadd-target').textContent = type === 'task' ? capturePath() : eventsPath();
   document.getElementById('quickadd-date-label').textContent = type === 'task' ? 'Date (optional)' : 'Date';
   document.getElementById('quickadd-input').placeholder = type === 'task' ? 'What needs doing?' : 'What\'s the event?';
+  const select = document.getElementById('quickadd-file');
+  const defaultPath = type === 'event' ? eventsPath() : capturePath();
+  if (select && [...select.options].some(o => o.value === defaultPath)){
+    select.value = defaultPath;
+  }
 }
 
-function openQuickAdd(){
+async function openQuickAdd(){
   if (!settings.token || !settings.owner || !settings.repo){
     setStatus('err', 'connect a repo first (Settings)');
     switchTab('settings');
     return;
   }
-  setQuickAddType('task');
   const overlay = document.getElementById('quickadd-overlay');
   overlay.classList.add('open');
   const input = document.getElementById('quickadd-input');
@@ -1786,6 +1790,21 @@ function openQuickAdd(){
   document.getElementById('quickadd-date').value = '';
   document.getElementById('quickadd-time').value = '';
   setTimeout(() => input.focus(), 50);
+
+  const select = document.getElementById('quickadd-file');
+  select.innerHTML = '<option>loading files…</option>';
+  try{
+    const files = await listOrgFiles(settings.notesPath);
+    const relLabel = f => f.startsWith(settings.notesPath + '/') ? f.slice(settings.notesPath.length + 1) : f;
+    const defaults = [capturePath(), eventsPath()];
+    // Make sure the configured quick-add/events files are offered even if
+    // they don't exist on GitHub yet (they'll be created on first use).
+    const allPaths = [...new Set([...defaults, ...files])];
+    select.innerHTML = allPaths.map(f => `<option value="${f}">${escapeHtml(relLabel(f))}</option>`).join('');
+  }catch(e){
+    select.innerHTML = `<option value="${capturePath()}">${escapeHtml(settings.captureFile || 'inbox.org')}</option>`;
+  }
+  setQuickAddType('task');
 }
 
 function closeQuickAdd(){
@@ -1800,6 +1819,7 @@ async function submitQuickAdd(){
   if (!title) return;
   const dateStr = document.getElementById('quickadd-date').value || null;
   const timeStr = document.getElementById('quickadd-time').value || null;
+  const targetPath = document.getElementById('quickadd-file').value || (quickAddType === 'event' ? eventsPath() : capturePath());
   if (quickAddType === 'event' && !dateStr){
     setStatus('err', 'events need a date');
     return; // leave the sheet open so a date can be added
@@ -1808,9 +1828,9 @@ async function submitQuickAdd(){
   quickAddInFlight = true;
   try{
     if (quickAddType === 'event'){
-      await appendLineToFile(eventsPath(), `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false), `Quick add event: ${title}`);
+      await appendLineToFile(targetPath, `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false), `Quick add event: ${title}`);
     } else {
-      await appendLineToFile(capturePath(), `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : ''), `Quick add: ${title}`);
+      await appendLineToFile(targetPath, `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : ''), `Quick add: ${title}`);
     }
   }finally{
     quickAddInFlight = false;
