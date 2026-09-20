@@ -9,8 +9,8 @@ SCHEDULED: <2026-09-28 Mon>
 ** Retic
 ** Ethan's Retic
 ** Tax
-*** TODO - Tax - book an appointment with Bob
-<2026-09-22 Tue>
+*** TODO - Tax - book an appointment with Bob.
+SCHEDULED: <2026-09-22 Tue>
 *** TODO - Tax - get my receipts sorted.
 *** TODO - Tax - let the others know if they are interested.
 * Work
