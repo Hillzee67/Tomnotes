@@ -20,6 +20,7 @@ SCHEDULED: <2026-09-28 Mon>
 ** Timetables
 ** Operational Plans
 ** Karoke
-*** TODO Check what has been done so far.
+*** TODO Karoke - Check what has been done so far.
+<2026-09-21 Mon>
 ** Reading Assessment
 
