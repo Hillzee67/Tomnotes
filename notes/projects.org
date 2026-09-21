@@ -32,7 +32,7 @@ SCHEDULED: <2026-09-22 Tue>
 SCHEDULED: <2026-09-21 Mon>
 *** DONE Karoke - Find out how to download the songs
 SCHEDULED: <2026-09-21 Mon>
-*** TODO Karoke - Download the songs for Karoke.
+*** DONE Karoke - Download the songs for Karoke.
 SCHEDULED: <2026-09-21 Mon>
 ** Reading Assessment
 
