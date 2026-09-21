@@ -30,7 +30,7 @@ SCHEDULED: <2026-09-22 Tue>
 ** Karoke
 *** DONE Karoke - find out what has been done.
 SCHEDULED: <2026-09-21 Mon>
-*** TODO Karoke - Find out how to download the songs
+*** DONE Karoke - Find out how to download the songs
 SCHEDULED: <2026-09-21 Mon>
 *** TODO Karoke - Download the songs for Karoke.
 SCHEDULED: <2026-09-21 Mon>
