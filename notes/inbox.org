@@ -1,5 +1,5 @@
 
-*** TODO Take a photo of the garden and email to work power
+*** DONE Take a photo of the garden and email to work power
 SCHEDULED: <2026-09-22 Tue>
 *** DONE Sort out the library books
 SCHEDULED: <2026-09-18 Fri 10:15>
