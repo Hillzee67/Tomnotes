@@ -36,5 +36,7 @@ SCHEDULED: <2026-09-21 Mon>
 SCHEDULED: <2026-09-21 Mon>
 *** TODO Karoke - test it out in the U/C
 SCHEDULED: <2026-09-23 Wed>
+*** TODO Karaoke - Finalise the list ready for the afternoon
+SCHEDULED: <2026-09-23 Wed>
 ** Reading Assessment
 
