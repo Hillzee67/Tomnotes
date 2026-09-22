@@ -1,7 +1,7 @@
 * Home
 ** The Kitchen
 *** TODO Kitchen - email the guy and see if he can still do the job
-SCHEDULED: <2026-09-22 Tue>
+SCHEDULED: <2026-09-23 Wed>
 *** TODO Kitchen - start taking off the doors, draws and panels.
 SCHEDULED: <2026-09-25 Fri>
 *** TODO Kitchen - work out what to do with the harder panels.
@@ -10,7 +10,7 @@ SCHEDULED: <2026-09-28 Mon>
 ** Ethan's Retic
 ** Tax
 *** TODO - Tax - book an appointment with Bob.
-SCHEDULED: <2026-09-22 Tue>
+SCHEDULED: <2026-09-23 Wed>
 *** TODO - Tax - get my receipts sorted.
 *** TODO - Tax - let the others know if they are interested.
 * Work
@@ -26,7 +26,7 @@ SCHEDULED: <2026-09-23 Wed>
 SCHEDULED: <2026-09-23 Wed>
 ** Operational Plans
 *** TODO Op Plans - Find out where the are up to.
-SCHEDULED: <2026-09-22 Tue>
+SCHEDULED: <2026-09-23 Wed>
 ** Karoke
 *** DONE Karoke - find out what has been done.
 SCHEDULED: <2026-09-21 Mon>
@@ -35,6 +35,6 @@ SCHEDULED: <2026-09-21 Mon>
 *** DONE Karoke - Download the songs for Karoke.
 SCHEDULED: <2026-09-21 Mon>
 *** TODO Karoke - test it out in the U/C
-SCHEDULED: <2026-09-22 Tue>
+SCHEDULED: <2026-09-23 Wed>
 ** Reading Assessment
 
