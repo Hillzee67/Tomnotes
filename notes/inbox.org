@@ -19,5 +19,5 @@ SCHEDULED: <2026-09-20 Sun 09:00>
 SCHEDULED: <2026-09-23 Wed>
 *** DONE create a shared folder in sss
 SCHEDULED: <2026-09-22 Tue>
-*** TODO Check Lianne Relief
+*** DONE Check Lianne Relief
 SCHEDULED: <2026-09-23 Wed>
