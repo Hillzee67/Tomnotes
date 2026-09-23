@@ -39,6 +39,12 @@ SCHEDULED: <2026-09-18>
 SCHEDULED: <2026-09-24 Thu>
 *** TODO Water Bill - $342.14
 SCHEDULED: <2026-09-24 Thu>
+*** TODO Rates 2 - $643
+SCHEDULED: <2026-11-20 Fri>
+*** TODO Rates 3 - $643
+SCHEDULED: <2027-01-22 Fri>
+*** TODO Rates 4 - $642.13
+SCHEDULED: <2027-03-26 Fri>
 ** Notes
 *** Trip to Adelaide
 **** Day 1
