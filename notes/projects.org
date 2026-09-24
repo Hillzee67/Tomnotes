@@ -25,8 +25,8 @@ SCHEDULED: <2026-09-24 Thu>
 *** TODO Timetables - Make the changes to the timetable for next term.
 SCHEDULED: <2026-09-25 Fri>
 ** Operational Plans
-*** TODO Op Plans - Find out where the are up to.
-SCHEDULED: <2026-09-24 Thu>
+*** TODO Op Plans - Get these finalised
+SCHEDULED: <2026-10-13 Tue>
 ** Karoke
 *** DONE Karoke - find out what has been done.
 SCHEDULED: <2026-09-21 Mon>
