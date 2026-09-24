@@ -15,7 +15,7 @@ SCHEDULED: <2026-09-20 Sun 11:00>
 SCHEDULED: <2026-09-20 Sun 03:30>
 *** DONE Ironing
 SCHEDULED: <2026-09-20 Sun 09:00>
-*** TODO Book an appointment for the dentist over the holidays - 9402488
+*** TODO Book an appointment for the dentist over the holidays - 94024888
 SCHEDULED: <2026-09-24 Thu>
 *** DONE create a shared folder in sss
 SCHEDULED: <2026-09-22 Tue>
