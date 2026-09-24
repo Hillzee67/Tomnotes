@@ -10,6 +10,9 @@ SCHEDULED: <2026-09-25 Fri>
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-28 Mon>
 ** Retic
+:PROPERTIES:
+:ORDER: 2
+:END:
 ** Ethan's Retic
 ** Tax
 *** TODO - Tax - book an appointment with Bob. - 93882724
@@ -30,6 +33,9 @@ SCHEDULED: <2026-09-24 Thu>
 *** DONE - PP Form
 *** DONE  - Year 1 Form
 *** TODO  - Year 2 Form
+:PROPERTIES:
+:ORDER: 0
+:END:
 *** TODO  - Year 3 Form
 *** TODO  - Year 4 Form
 *** TODO  - Year 5 Form
