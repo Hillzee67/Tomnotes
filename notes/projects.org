@@ -5,13 +5,16 @@ SCHEDULED: <2026-09-24 Thu>
 *** TODO Kitchen - start taking off the doors, draws and panels.
 SCHEDULED: <2026-09-25 Fri>
 :PROPERTIES:
-:ORDER: 1
+:ORDER: 2
 :END:
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-28 Mon>
 ** Retic
 :PROPERTIES:
 :ORDER: 2
+:END:
+:PROPERTIES:
+:ORDER: 1
 :END:
 ** Ethan's Retic
 ** Tax
@@ -33,6 +36,9 @@ SCHEDULED: <2026-09-24 Thu>
 *** DONE - PP Form
 *** DONE  - Year 1 Form
 *** TODO  - Year 2 Form
+:PROPERTIES:
+:ORDER: 0
+:END:
 :PROPERTIES:
 :ORDER: 0
 :END:
