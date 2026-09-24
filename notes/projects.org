@@ -21,7 +21,13 @@ SCHEDULED: <2026-09-28 Mon>
 *** TODO - Tax - book an appointment with Bob. - 93882724
 SCHEDULED: <2026-09-25 Fri>
 :PROPERTIES:
+:PROPERTIES:
 :ORDER: 2
+:END:
+:ORDER: 2
+:PROPERTIES:
+:ORDER: 3
+:END:
 :END:
 *** TODO - Tax - get my receipts sorted.
 *** TODO - Tax - let the others know if they are interested.
@@ -33,13 +39,25 @@ SCHEDULED: <2026-09-21 Mon>
 ** Classlists 2027
 *** DONE Classlists - start to prep the friend selection sheets
 SCHEDULED: <2026-09-24 Thu>
+:PROPERTIES:
+:ORDER: 0
+:END:
 *** DONE - PP Form
 *** DONE  - Year 1 Form
 *** TODO  - Year 2 Form
 :PROPERTIES:
+:PROPERTIES:
+:ORDER: 1
+:END:
 :ORDER: 0
+:PROPERTIES:
+:ORDER: 4
+:END:
 :END:
 :PROPERTIES:
+:PROPERTIES:
+:ORDER: 5
+:END:
 :ORDER: 0
 :END:
 *** TODO  - Year 3 Form
