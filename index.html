@@ -88,6 +88,14 @@
   .task .body{flex:1; min-width:0;}
   .task .title{font-size:14px; line-height:1.4; word-break:break-word;}
   .task .meta{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:3px;}
+  .task .drag-handle{
+    flex-shrink:0; align-self:center; background:transparent; border:none;
+    color:var(--text-dim); font-size:16px; line-height:1; padding:6px 4px;
+    cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;
+  }
+  .task.dragging{
+    border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,.4); opacity:.9;
+  }
   .task .meta .file{color:var(--accent-dim);}
   .task.overdue .meta{color:var(--rust);}
   .task.today .meta{color:var(--gold);}
@@ -420,6 +428,24 @@ function parseTimestampInner(inner){
   };
 }
 
+// Reads a numeric :ORDER: value out of a :PROPERTIES: drawer, if one
+// immediately follows the headline (after any SCHEDULED/DEADLINE lines).
+// This is how drag-reordered position on the Agenda page is persisted —
+// as a standard, portable org property rather than app-only state.
+function extractOrderProperty(lines, startIndex){
+  let i = startIndex;
+  while (i < lines.length && /^\s*(SCHEDULED|DEADLINE):/.test(lines[i])) i++;
+  if (lines[i] && lines[i].trim() === ':PROPERTIES:'){
+    let j = i + 1;
+    while (j < lines.length && lines[j].trim() !== ':END:'){
+      const m = lines[j].match(/^\s*:ORDER:\s*(-?\d+(?:\.\d+)?)/i);
+      if (m) return parseFloat(m[1]);
+      j++;
+    }
+  }
+  return null;
+}
+
 function parseOrgFile(path, text){
   const lines = text.split('\n');
   const tasks = [];
@@ -430,6 +456,7 @@ function parseOrgFile(path, text){
     const priority = m[3] || null;
     const title = m[4].trim();
     const nextLine = lines[i+1] || '';
+    const order = extractOrderProperty(lines, i + 1);
 
     if (state){
       // A task: TODO/NEXT/WAITING/DONE/CANCELLED, dated via SCHEDULED/DEADLINE.
@@ -441,7 +468,7 @@ function parseOrgFile(path, text){
         if (dm[1] === 'SCHEDULED'){ scheduled = parsed.date; scheduledRepeat = parsed.repeat; }
         if (dm[1] === 'DEADLINE'){ deadline = parsed.date; deadlineRepeat = parsed.repeat; }
       }
-      tasks.push({file: path, lineIndex: i, type: 'task', state, priority, title, scheduled, scheduledRepeat, deadline, deadlineRepeat});
+      tasks.push({file: path, lineIndex: i, type: 'task', state, priority, title, scheduled, scheduledRepeat, deadline, deadlineRepeat, order});
     } else {
       // No keyword — treat a headline with a plain timestamp underneath it
       // as an event/appointment rather than a task.
@@ -449,7 +476,7 @@ function parseOrgFile(path, text){
       if (tm && title){
         const parsed = parseTimestampInner(tm[1]);
         if (parsed.date){
-          tasks.push({file: path, lineIndex: i, type: 'event', title, scheduled: parsed.date, scheduledRepeat: parsed.repeat, deadline: null, deadlineRepeat: null, time: parsed.time});
+          tasks.push({file: path, lineIndex: i, type: 'event', title, scheduled: parsed.date, scheduledRepeat: parsed.repeat, deadline: null, deadlineRepeat: null, time: parsed.time, order});
         }
       }
     }
@@ -602,6 +629,12 @@ async function refreshAgenda(){
   renderAgenda();
 }
 
+function orderSort(a, b){
+  const ao = a.order == null ? Infinity : a.order, bo = b.order == null ? Infinity : b.order;
+  if (ao !== bo) return ao - bo;
+  return (a.time || '99:99').localeCompare(b.time || '99:99');
+}
+
 function renderAgenda(){
   const today = todayStr();
   const open = tasksCache.filter(t => {
@@ -619,8 +652,8 @@ function renderAgenda(){
     if (t.scheduledRepeat || t.deadlineRepeat) return false;
     const d = t.deadline || t.scheduled;
     return d && d < today;
-  });
-  const unscheduled = open.filter(t => !t.scheduled && !t.deadline);
+  }).sort(orderSort);
+  const unscheduled = open.filter(t => !t.scheduled && !t.deadline).sort(orderSort);
 
   const main = document.getElementById('main');
   if (!settings.token || !settings.owner || !settings.repo){
@@ -639,7 +672,7 @@ function renderAgenda(){
         occursOnDate(t.scheduled, t.scheduledRepeat, key) ||
         occursOnDate(t.deadline, t.deadlineRepeat, key)
       )
-      .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+      .sort(orderSort);
     days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks);
   }
 
@@ -658,22 +691,25 @@ function taskRow(t, cls){
   const repLabel = repeat ? repeatLabel(repeat) : '';
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
   const idx = tasksCache.indexOf(t);
+  const dragHandle = `<button class="drag-handle" aria-label="drag to reorder" title="drag to reorder">⠿</button>`;
   if (t.type === 'event'){
     const timeLabel = t.time ? `${t.time} · ` : '';
-    return `<div class="task ${cls} event">
+    return `<div class="task ${cls} event" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
       <span class="dot" aria-hidden="true"></span>
       <div class="body">
         <div class="title">${escapeHtml(t.title)}</div>
         <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span>${repLabel ? ' · ' + repLabel : ''}</div>
       </div>
+      ${dragHandle}
     </div>`;
   }
-  return `<div class="task ${cls}">
+  return `<div class="task ${cls}" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
     <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
     <div class="body">
       <div class="title">${escapeHtml(t.title)}</div>
       <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}${repLabel ? ' · ' + repLabel : ''}</div>
     </div>
+    ${dragHandle}
   </div>`;
 }
 
@@ -711,6 +747,101 @@ async function toggleTask(idx){
   }catch(e){
     setStatus('err', e.message);
   }
+}
+
+/* ---------- agenda drag-to-reorder ---------- */
+// Writes/updates a numeric :ORDER: property in a task's own
+// :PROPERTIES: drawer (creating the drawer if it doesn't exist yet),
+// working on plain text so it can run without that file's editor open.
+function setOrderInContent(content, lineIndex, orderValue){
+  const lines = content.split('\n');
+  let i = lineIndex + 1;
+  while (i < lines.length && /^\s*(SCHEDULED|DEADLINE):/.test(lines[i])) i++;
+  if (lines[i] && lines[i].trim() === ':PROPERTIES:'){
+    let j = i + 1, orderLineIdx = -1;
+    while (j < lines.length && lines[j].trim() !== ':END:'){
+      if (/^\s*:ORDER:/i.test(lines[j])) orderLineIdx = j;
+      j++;
+    }
+    if (orderLineIdx !== -1) lines[orderLineIdx] = `:ORDER: ${orderValue}`;
+    else lines.splice(j, 0, `:ORDER: ${orderValue}`);
+  } else {
+    lines.splice(i, 0, ':PROPERTIES:', `:ORDER: ${orderValue}`, ':END:');
+  }
+  return lines.join('\n');
+}
+
+// orderedTasks: [{file, lineIndex}, ...] in their final drag order.
+// Tasks are grouped by file and, within a file, processed bottom-to-top so
+// that inserting drawer lines for one task never shifts the line numbers
+// of tasks still waiting to be processed above it.
+async function persistTaskOrder(orderedTasks){
+  const byFile = {};
+  orderedTasks.forEach((t, idx) => {
+    (byFile[t.file] = byFile[t.file] || []).push({lineIndex: t.lineIndex, order: idx});
+  });
+  setStatus('busy', 'saving order…');
+  try{
+    for (const file of Object.keys(byFile)){
+      const {content, sha} = await ghGetFile(file);
+      let updated = content;
+      const items = byFile[file].sort((a, b) => b.lineIndex - a.lineIndex); // bottom-to-top
+      items.forEach(item => { updated = setOrderInContent(updated, item.lineIndex, item.order); });
+      const res = await ghPutFile(file, updated, sha, 'Update task order');
+      fileCache[file] = {content: updated, sha: res.content.sha};
+    }
+    setStatus('ok', 'order saved');
+  }catch(e){
+    setStatus('err', e.message);
+  }
+  refreshAgenda();
+}
+
+let dragState = null;
+
+function initAgendaDragHandlers(){
+  const main = document.getElementById('main');
+
+  main.addEventListener('pointerdown', e => {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    const row = handle.closest('.task');
+    const section = row && row.closest('.group');
+    if (!row || !section) return;
+    e.preventDefault();
+    dragState = {row, section};
+    row.classList.add('dragging');
+    try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+  });
+
+  main.addEventListener('pointermove', e => {
+    if (!dragState) return;
+    e.preventDefault();
+    const {row, section} = dragState;
+    const siblings = Array.from(section.querySelectorAll(':scope > .task')).filter(r => r !== row);
+    let target = null;
+    for (const sib of siblings){
+      const rect = sib.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2){ target = sib; break; }
+    }
+    if (target){
+      if (row.nextSibling !== target) section.insertBefore(row, target);
+    } else if (section.lastElementChild !== row){
+      section.appendChild(row);
+    }
+  });
+
+  const finishDrag = () => {
+    if (!dragState) return;
+    const {row, section} = dragState;
+    row.classList.remove('dragging');
+    const orderedTasks = Array.from(section.querySelectorAll(':scope > .task'))
+      .map(r => ({file: r.dataset.file, lineIndex: parseInt(r.dataset.line, 10)}));
+    dragState = null;
+    persistTaskOrder(orderedTasks);
+  };
+  main.addEventListener('pointerup', finishDrag);
+  main.addEventListener('pointercancel', finishDrag);
 }
 
 /* ---------- files tab ---------- */
@@ -1889,6 +2020,7 @@ function setStatus(kind, msg){
 }
 
 /* ---------- boot ---------- */
+initAgendaDragHandlers();
 if ('serviceWorker' in navigator){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
   // As soon as a newly-deployed service worker takes over, reload once so
