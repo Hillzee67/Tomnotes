@@ -22,8 +22,8 @@ SCHEDULED: <2026-09-21 Mon>
 *** TODO Classlists - start to prep the friend selection sheets
 SCHEDULED: <2026-09-24 Thu>
 ** Timetables
-*** TODO Timetables - Find out if there are any changes to the timetable for next term
-SCHEDULED: <2026-09-24 Thu>
+*** TODO Timetables - Make the changes to the timetable for next term.
+SCHEDULED: <2026-09-25 Fri>
 ** Operational Plans
 *** TODO Op Plans - Find out where the are up to.
 SCHEDULED: <2026-09-24 Thu>
