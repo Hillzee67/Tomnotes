@@ -4,6 +4,9 @@
 SCHEDULED: <2026-09-24 Thu>
 *** TODO Kitchen - start taking off the doors, draws and panels.
 SCHEDULED: <2026-09-25 Fri>
+:PROPERTIES:
+:ORDER: 1
+:END:
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-28 Mon>
 ** Retic
@@ -11,6 +14,9 @@ SCHEDULED: <2026-09-28 Mon>
 ** Tax
 *** TODO - Tax - book an appointment with Bob. - 93882724
 SCHEDULED: <2026-09-25 Fri>
+:PROPERTIES:
+:ORDER: 2
+:END:
 *** TODO - Tax - get my receipts sorted.
 *** TODO - Tax - let the others know if they are interested.
 * Work
@@ -31,6 +37,9 @@ SCHEDULED: <2026-09-24 Thu>
 ** Timetables
 *** TODO Timetables - Make the changes to the timetable for next term.
 SCHEDULED: <2026-09-25 Fri>
+:PROPERTIES:
+:ORDER: 0
+:END:
 ** Operational Plans
 *** TODO Op Plans - Get these finalised
 SCHEDULED: <2026-10-13 Tue>
