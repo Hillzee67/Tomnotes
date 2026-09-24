@@ -19,7 +19,7 @@ SCHEDULED: <2026-09-24 Thu>
 *** DONE Pat follow up with has been done so far
 SCHEDULED: <2026-09-21 Mon>
 ** Classlists
-*** TODO Classlists - start to prep the friend selection sheets
+*** DONE Classlists - start to prep the friend selection sheets
 SCHEDULED: <2026-09-24 Thu>
 ** Timetables
 *** TODO Timetables - Make the changes to the timetable for next term.
