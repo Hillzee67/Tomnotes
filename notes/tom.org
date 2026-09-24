@@ -37,7 +37,7 @@ SCHEDULED: <2026-09-18>
 *** Bills Totals
 *** DONE Power Bill - $342
 SCHEDULED: <2026-09-24 Thu>
-*** TODO Water Bill - $342.14
+*** DONE Water Bill - $342.14
 SCHEDULED: <2026-09-24 Thu>
 *** TODO Rates 2 - $643
 SCHEDULED: <2026-11-20 Fri>
