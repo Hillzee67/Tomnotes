@@ -1,34 +1,18 @@
 * Home
+** Driveway ag cleanup
+*** TODO Paving - Powerwash the concrete
+*** TODO Paving - Find out what the coating is and buy it
+*** TODO Paving - Apply the coating
 ** The Kitchen
 *** DONE Kitchen - email the guy and see if he can still do the job
 SCHEDULED: <2026-09-24 Thu>
 *** TODO Kitchen - start taking off the doors, draws and panels.
-SCHEDULED: <2026-09-25 Fri>
-:PROPERTIES:
-:ORDER: 2
-:END:
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-28 Mon>
 ** Retic
-:PROPERTIES:
-:ORDER: 2
-:END:
-:PROPERTIES:
-:ORDER: 1
-:END:
 ** Ethan's Retic
 ** Tax
 *** TODO - Tax - book an appointment with Bob. - 93882724
-SCHEDULED: <2026-09-25 Fri>
-:PROPERTIES:
-:PROPERTIES:
-:ORDER: 1
-:END:
-:ORDER: 2
-:PROPERTIES:
-:ORDER: 3
-:END:
-:END:
 *** TODO - Tax - get my receipts sorted.
 *** TODO - Tax - let the others know if they are interested.
 * Work
@@ -38,38 +22,16 @@ SCHEDULED: <2026-09-25 Fri>
 SCHEDULED: <2026-09-21 Mon>
 ** Classlists 2027
 *** DONE Classlists - start to prep the friend selection sheets
-SCHEDULED: <2026-09-24 Thu>
-:PROPERTIES:
-:ORDER: 0
-:END:
+SCHEDULED: <2026-09-25 Fri>
 *** DONE - PP Form
 *** DONE  - Year 1 Form
 *** TODO  - Year 2 Form
-:PROPERTIES:
-:PROPERTIES:
-:ORDER: 1
-:END:
-:ORDER: 0
-:PROPERTIES:
-:ORDER: 4
-:END:
-:END:
-:PROPERTIES:
-:PROPERTIES:
-:ORDER: 5
-:END:
-:ORDER: 0
-:END:
 *** TODO  - Year 3 Form
 *** TODO  - Year 4 Form
 *** TODO  - Year 5 Form
 *** TODO  - Year 6 Form
 ** Timetables
 *** TODO Timetables - Make the changes to the timetable for next term.
-SCHEDULED: <2026-09-25 Fri>
-:PROPERTIES:
-:ORDER: 0
-:END:
 ** Operational Plans
 *** TODO Op Plans - Get these finalised
 SCHEDULED: <2026-10-13 Tue>
