@@ -1,6 +1,6 @@
 * Home
 ** The Kitchen
-*** TODO Kitchen - email the guy and see if he can still do the job
+*** DONE Kitchen - email the guy and see if he can still do the job
 SCHEDULED: <2026-09-24 Thu>
 *** TODO Kitchen - start taking off the doors, draws and panels.
 SCHEDULED: <2026-09-25 Fri>
