@@ -32,7 +32,7 @@ SCHEDULED: <2026-09-25 Fri>
 *** TODO  - Year 5 Form
 *** TODO  - Year 6 Form
 ** Timetables
-*** TODO Timetables - Make the changes to the timetable for next term.
+*** DONE Timetables - Make the changes to the timetable for next term.
 SCHEDULED: <2026-09-25 Fri>
 ** Operational Plans
 *** TODO Op Plans - Get these finalised
