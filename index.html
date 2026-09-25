@@ -411,7 +411,7 @@ async function listOrgFiles(path){
 }
 
 /* ---------- org parsing ---------- */
-const HEADLINE_RE = /^(\*+)\s+(TODO|NEXT|WAITING|DONE|CANCELLED)?\s*(?:\[#([A-C])\]\s*)?(.*)$/;
+const HEADLINE_RE = /^(\*+)\s+(TODO|NEXT|WAITING|DONE|CANCELLED)?\s*(?:\[#([A-Za-z0-9]+)\]\s*)?(.*)$/;
 const DATE_RE = /(SCHEDULED|DEADLINE):\s*<([^>]+)>/g;
 const PLAIN_TIMESTAMP_RE = /<([^>]+)>/;
 
@@ -428,24 +428,6 @@ function parseTimestampInner(inner){
   };
 }
 
-// Reads a numeric :ORDER: value out of a :PROPERTIES: drawer, if one
-// immediately follows the headline (after any SCHEDULED/DEADLINE lines).
-// This is how drag-reordered position on the Agenda page is persisted —
-// as a standard, portable org property rather than app-only state.
-function extractOrderProperty(lines, startIndex){
-  let i = startIndex;
-  while (i < lines.length && /^\s*(SCHEDULED|DEADLINE):/.test(lines[i])) i++;
-  if (lines[i] && lines[i].trim() === ':PROPERTIES:'){
-    let j = i + 1;
-    while (j < lines.length && lines[j].trim() !== ':END:'){
-      const m = lines[j].match(/^\s*:ORDER:\s*(-?\d+(?:\.\d+)?)/i);
-      if (m) return parseFloat(m[1]);
-      j++;
-    }
-  }
-  return null;
-}
-
 function parseOrgFile(path, text){
   const lines = text.split('\n');
   const tasks = [];
@@ -456,7 +438,11 @@ function parseOrgFile(path, text){
     const priority = m[3] || null;
     const title = m[4].trim();
     const nextLine = lines[i+1] || '';
-    const order = extractOrderProperty(lines, i + 1);
+    // The priority cookie [#X] normally holds a letter (A/B/C), but drag
+    // order on the Agenda page is stored the same way, just with a plain
+    // number instead — e.g. [#3] — so it stays a compact, single-line
+    // edit rather than a multi-line properties drawer.
+    const order = priority && /^\d+$/.test(priority) ? parseInt(priority, 10) : null;
 
     if (state){
       // A task: TODO/NEXT/WAITING/DONE/CANCELLED, dated via SCHEDULED/DEADLINE.
@@ -753,21 +739,16 @@ async function toggleTask(idx){
 // Writes/updates a numeric :ORDER: property in a task's own
 // :PROPERTIES: drawer (creating the drawer if it doesn't exist yet),
 // working on plain text so it can run without that file's editor open.
+// Writes the drag-order value as a numeric priority cookie — [#N] — right
+// on the headline line itself, replacing any existing cookie (letter or
+// number). Since this only rewrites one line's text rather than inserting
+// new lines, the file's total line count never changes.
 function setOrderInContent(content, lineIndex, orderValue){
   const lines = content.split('\n');
-  let i = lineIndex + 1;
-  while (i < lines.length && /^\s*(SCHEDULED|DEADLINE):/.test(lines[i])) i++;
-  if (lines[i] && lines[i].trim() === ':PROPERTIES:'){
-    let j = i + 1, orderLineIdx = -1;
-    while (j < lines.length && lines[j].trim() !== ':END:'){
-      if (/^\s*:ORDER:/i.test(lines[j])) orderLineIdx = j;
-      j++;
-    }
-    if (orderLineIdx !== -1) lines[orderLineIdx] = `:ORDER: ${orderValue}`;
-    else lines.splice(j, 0, `:ORDER: ${orderValue}`);
-  } else {
-    lines.splice(i, 0, ':PROPERTIES:', `:ORDER: ${orderValue}`, ':END:');
-  }
+  const line = lines[lineIndex];
+  const m = line.match(/^(\*+\s+)((?:TODO|NEXT|WAITING|DONE|CANCELLED)\s+)?(?:\[#[A-Za-z0-9]+\]\s*)?(.*)$/);
+  if (!m) return content;
+  lines[lineIndex] = `${m[1]}${m[2] || ''}[#${orderValue}] ${m[3]}`;
   return lines.join('\n');
 }
 
@@ -775,7 +756,10 @@ function setOrderInContent(content, lineIndex, orderValue){
 // Tasks are grouped by file and, within a file, processed bottom-to-top so
 // that inserting drawer lines for one task never shifts the line numbers
 // of tasks still waiting to be processed above it.
+let reorderInFlight = false;
+
 async function persistTaskOrder(orderedTasks){
+  reorderInFlight = true;
   const byFile = {};
   orderedTasks.forEach((t, idx) => {
     (byFile[t.file] = byFile[t.file] || []).push({lineIndex: t.lineIndex, order: idx});
@@ -785,7 +769,7 @@ async function persistTaskOrder(orderedTasks){
     for (const file of Object.keys(byFile)){
       const {content, sha} = await ghGetFile(file);
       let updated = content;
-      const items = byFile[file].sort((a, b) => b.lineIndex - a.lineIndex); // bottom-to-top
+      const items = byFile[file]; // rewriting each headline in place, so processing order doesn't matter here
       items.forEach(item => { updated = setOrderInContent(updated, item.lineIndex, item.order); });
       const res = await ghPutFile(file, updated, sha, 'Update task order');
       fileCache[file] = {content: updated, sha: res.content.sha};
@@ -794,7 +778,8 @@ async function persistTaskOrder(orderedTasks){
   }catch(e){
     setStatus('err', e.message);
   }
-  refreshAgenda();
+  await refreshAgenda();
+  reorderInFlight = false;
 }
 
 let dragState = null;
@@ -803,6 +788,7 @@ function initAgendaDragHandlers(){
   const main = document.getElementById('main');
 
   main.addEventListener('pointerdown', e => {
+    if (reorderInFlight) return; // a previous drag is still saving — starting another here would race it
     const handle = e.target.closest('.drag-handle');
     if (!handle) return;
     const row = handle.closest('.task');
