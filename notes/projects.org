@@ -17,6 +17,8 @@ SCHEDULED: <2026-09-28 Mon>
 SCHEDULED: <2026-09-25 Fri>
 *** TODO [#4] - Tax - get my receipts sorted.
 *** TODO [#5] - Tax - let the others know if they are interested.
+*** Tax with Bob 
+<2026-10-01 Thu 11:00>
 * Work
 ** Naplan
 ** PAT testing
