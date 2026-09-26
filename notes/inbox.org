@@ -23,3 +23,5 @@ SCHEDULED: <2026-09-22 Tue>
 SCHEDULED: <2026-09-23 Wed>
 *** DONE Investigate casual seeker again
 SCHEDULED: <2026-09-24 Thu>
+*** TODO Pay for the Golf trip
+SCHEDULED: <2026-09-27 Sun 10:30>
