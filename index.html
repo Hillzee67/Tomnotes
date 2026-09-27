@@ -678,11 +678,12 @@ function taskRow(t, cls){
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
   const idx = tasksCache.indexOf(t);
   const dragHandle = `<button class="drag-handle" aria-label="drag to reorder" title="drag to reorder">⠿</button>`;
+  const jumpAttrs = `onclick="openTaskInRaw('${t.file.replace(/'/g,"\\'")}', ${t.lineIndex})" style="cursor:pointer;"`;
   if (t.type === 'event'){
     const timeLabel = t.time ? `${t.time} · ` : '';
     return `<div class="task ${cls} event" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
       <span class="dot" aria-hidden="true"></span>
-      <div class="body">
+      <div class="body" ${jumpAttrs}>
         <div class="title">${escapeHtml(t.title)}</div>
         <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span>${repLabel ? ' · ' + repLabel : ''}</div>
       </div>
@@ -691,7 +692,7 @@ function taskRow(t, cls){
   }
   return `<div class="task ${cls}" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
     <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
-    <div class="body">
+    <div class="body" ${jumpAttrs}>
       <div class="title">${escapeHtml(t.title)}</div>
       <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}${repLabel ? ' · ' + repLabel : ''}</div>
     </div>
@@ -797,8 +798,7 @@ function initAgendaDragHandlers(){
     e.preventDefault();
     dragState = {row, section};
     row.classList.add('dragging');
-    try{ handle.setPointerCapture(e.pointerId); }catch(err){}
-  });
+  }, {passive: false});
 
   main.addEventListener('pointermove', e => {
     if (!dragState) return;
@@ -815,7 +815,7 @@ function initAgendaDragHandlers(){
     } else if (section.lastElementChild !== row){
       section.appendChild(row);
     }
-  });
+  }, {passive: false});
 
   const finishDrag = () => {
     if (!dragState) return;
@@ -875,6 +875,27 @@ async function openFile(path){
   document.getElementById('ml-buffer').textContent = path.split('/').pop();
   editorView = 'outline';
   cmInstance = null;
+  try{
+    const {content, sha} = await ghGetFile(path);
+    fileCache[path] = {content, sha};
+    renderEditorPane(path);
+  }catch(e){
+    main.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// Jumps straight from an Agenda task/event into Raw view at its exact
+// line, switching tabs in the process — same underlying mechanism as
+// clicking a headline in Outline view.
+async function openTaskInRaw(path, lineIndex){
+  currentTab = 'files';
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === 'files'));
+  document.getElementById('ml-buffer').textContent = path.split('/').pop();
+  editorView = 'raw';
+  cmInstance = null;
+  window._jumpToLine = lineIndex;
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="editor-topbar"><span class="name">${escapeHtml(path)}</span><button class="ghost" onclick="renderFiles()">‹ back</button></div><div class="empty">loading…</div>`;
   try{
     const {content, sha} = await ghGetFile(path);
     fileCache[path] = {content, sha};
