@@ -5,6 +5,8 @@
 SCHEDULED: <2026-09-28 Mon>
 *** TODO [#2] Paving - Apply the coating
 ** The Kitchen
+*** TODO Kitchen - Ring the guy and see if all is good.
+SCHEDULED: <2026-09-29 Mon>
 *** DONE Kitchen - email the guy and see if he can still do the job
 SCHEDULED: <2026-09-24 Thu>
 *** TODO [#2] Kitchen - start taking off the doors, draws and panels.
