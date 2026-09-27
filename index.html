@@ -803,17 +803,19 @@ function initAgendaDragHandlers(){
   main.addEventListener('pointermove', e => {
     if (!dragState) return;
     e.preventDefault();
-    const {row, section} = dragState;
-    const siblings = Array.from(section.querySelectorAll(':scope > .task')).filter(r => r !== row);
-    let target = null;
-    for (const sib of siblings){
-      const rect = sib.getBoundingClientRect();
-      if (e.clientY < rect.top + rect.height / 2){ target = sib; break; }
-    }
-    if (target){
-      if (row.nextSibling !== target) section.insertBefore(row, target);
-    } else if (section.lastElementChild !== row){
-      section.appendChild(row);
+    try{
+      const {row, section} = dragState;
+      const siblings = Array.from(section.querySelectorAll(':scope > .task')).filter(r => r !== row);
+      let target = null;
+      for (const sib of siblings){
+        const rect = sib.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2){ target = sib; break; }
+      }
+      if (target) section.insertBefore(row, target);
+      else section.appendChild(row);
+    }catch(err){
+      console.error('drag reorder error:', err);
+      setStatus('err', 'drag error: ' + err.message);
     }
   }, {passive: false});
 
