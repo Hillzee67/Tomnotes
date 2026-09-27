@@ -1,10 +1,5 @@
 * Tomorg
 ** Tasks
-
-
-
-*** DONE Remember to weigh yourself
-SCHEDULED: <2026-08-28 Fri>
 ** Events
 *** Finals
 <2026-09-18 Fri>
@@ -21,7 +16,6 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-08-28 Fri>
 *** Holidays begin
 <2026-09-26 Sat>
-** Completed Tasks
 ** Bills
 *** Overall Bills
 | Date    | Bill    | Cost    |
