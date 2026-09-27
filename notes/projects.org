@@ -2,7 +2,7 @@
 ** Driveway ag cleanup
 *** TODO [#1] Paving - Powerwash the concrete
 *** TODO [#1] Paving - Find out what the coating is and buy it
-SCHEDULED: <2026-09-27 Sun>
+SCHEDULED: <2026-09-28 Mon>
 *** TODO [#2] Paving - Apply the coating
 ** The Kitchen
 *** DONE Kitchen - email the guy and see if he can still do the job
