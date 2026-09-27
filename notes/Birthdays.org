@@ -16,4 +16,13 @@ SCHEDULED: <2027-08-27 Fri +1y>
 ** Mum's Birthday
 SCHEDULED: <2027-02-11 Thu +1y>
 ** Jus's Birthday 
-SCHEDULED: <2026-10-15 Thu +1y> 
+SCHEDULED: <2026-10-15 Thu +1y>
+** Nick's Birthday
+** Melissa's Birthday
+SCHEDULED: <2027-02-01 Mon +1y>
+** Mark's Birthday 
+SCHEDULED: <2026-10-10 Sat +1y>
+** Brayden's Birthday
+SCHEDULED: <2027-02-06 Sat +1y>
+** Ashlyn's
+SCHEDULED: <2027-04-23 Fri>
