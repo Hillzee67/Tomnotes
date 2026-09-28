@@ -22,6 +22,7 @@ SCHEDULED: <2026-09-28 Mon>
 SCHEDULED: <2026-09-25 Fri>
 *** TODO [#3] - Tax - get my receipts sorted.
 *** TODO [#4] - Tax - let the others know if they are interested.
+SCHEDULED: <2026-09-28 Mon>
 *** Tax with Bob 
 <2026-10-01 Thu 11:00>
 * Work
