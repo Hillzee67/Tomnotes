@@ -15,7 +15,7 @@ SCHEDULED: <2026-09-29 Tue>
 SCHEDULED: <2026-09-30 Wed>
 ** Retic
 ** Ethan's Retic
-*** TODO Ethan's retic - go and have a look and see what is needed.
+*** DONE Ethan's retic - go and have a look and see what is needed.
 SCHEDULED: <2026-09-29 Tue>
 ** Tax
 *** DONE - Tax - book an appointment with Bob. - 93882724
