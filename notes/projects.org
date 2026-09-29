@@ -10,7 +10,7 @@ SCHEDULED: <2026-09-29 Tue>
 *** DONE Kitchen - email the guy and see if he can still do the job
 SCHEDULED: <2026-09-24 Thu>
 *** TODO [#2] Kitchen - start taking off the doors, draws and panels.
-SCHEDULED: <2026-09-28 Mon>
+SCHEDULED: <2026-09-29 Tue>
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-30 Wed>
 ** Retic
@@ -22,7 +22,7 @@ SCHEDULED: <2026-09-29 Tue>
 SCHEDULED: <2026-09-25 Fri>
 *** TODO [#3] - Tax - get my receipts sorted.
 *** TODO [#4] - Tax - let the others know if they are interested.
-SCHEDULED: <2026-09-28 Mon>
+SCHEDULED: <2026-09-29 Tue>
 *** Tax with Bob 
 <2026-10-01 Thu 11:00>
 * Work
