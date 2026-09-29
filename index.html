@@ -867,7 +867,7 @@ async function createFile(){
 
 let editorView = 'outline';       // 'outline' | 'raw'
 let outlineCollapsed = new Set(store.get('outline_collapsed', [])); // keys like "path::level::title", persisted
-let hideDoneItems = false;
+let hideDoneItems = store.get('hide_done', false);
 let cmInstance = null;
 let suppressAutoFix = false;
 
@@ -1205,6 +1205,7 @@ function applyHideDoneFolds(cm){
 
 function toggleHideDoneRaw(){
   hideDoneItems = !hideDoneItems;
+  store.set('hide_done', hideDoneItems);
   if (cmInstance) applyHideDoneFolds(cmInstance);
   const btn = document.getElementById('hide-done-btn');
   if (btn) btn.textContent = hideDoneItems ? 'show done' : 'hide done';
@@ -1217,6 +1218,7 @@ function switchEditorView(path, view){
 
 function toggleHideDone(path){
   hideDoneItems = !hideDoneItems;
+  store.set('hide_done', hideDoneItems);
   renderEditorPane(path);
 }
 
