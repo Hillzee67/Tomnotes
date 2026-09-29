@@ -26,4 +26,4 @@ SCHEDULED: <2026-09-24 Thu>
 *** DONE [#0] Pay for the Golf trip
 SCHEDULED: <2026-09-28 Mon 10:30>
 *** TODO Ring Mum and Jus to organise a visit
-SCHEDULED: <2026-09-28 Mon>
+SCHEDULED: <2026-09-29 Tue>
