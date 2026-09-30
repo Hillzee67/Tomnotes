@@ -22,7 +22,7 @@ SCHEDULED: <2026-09-29 Tue>
 SCHEDULED: <2026-09-25 Fri>
 *** TODO [#3] - Tax - get my receipts sorted.
 SCHEDULED: <2026-09-30 Wed>
-*** TODO [#4] - Tax - let the others know if they are interested.
+*** DONE [#4] - Tax - let the others know if they are interested.
 SCHEDULED: <2026-09-29 Tue>
 *** Tax with Bob 
 <2026-10-01 Thu 11:00>
