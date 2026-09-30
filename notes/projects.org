@@ -9,7 +9,7 @@ SCHEDULED: <2026-09-29 Tue>
 SCHEDULED: <2026-09-29 Tue>
 *** DONE Kitchen - email the guy and see if he can still do the job
 SCHEDULED: <2026-09-24 Thu>
-*** TODO [#2] Kitchen - start taking off the doors, draws and panels.
+*** DONE [#2] Kitchen - start taking off the doors, draws and panels.
 SCHEDULED: <2026-09-29 Tue>
 *** TODO Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-30 Wed>
