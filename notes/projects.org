@@ -20,7 +20,7 @@ SCHEDULED: <2026-09-29 Tue>
 ** Tax
 *** DONE - Tax - book an appointment with Bob. - 93882724
 SCHEDULED: <2026-09-25 Fri>
-*** TODO [#3] - Tax - get my receipts sorted.
+*** DONE [#3] - Tax - get my receipts sorted.
 SCHEDULED: <2026-09-30 Wed>
 *** DONE [#4] - Tax - let the others know if they are interested.
 SCHEDULED: <2026-09-29 Tue>
