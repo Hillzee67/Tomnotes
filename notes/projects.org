@@ -6,7 +6,7 @@ SCHEDULED: <2026-09-29 Tue>
 *** TODO [#2] Paving - Apply the coating
 ** The Kitchen
 *** TODO Ring the kitchen take apart people 
-SCHEDULED: <2026-10-01 Thu>
+SCHEDULED: <2026-10-02 Fri>
 **** Greg Miskie 0418901930 Mainhaus Property
 **** Mike - 0418922732 Kitchens on Tap
 *** DONE Kitchen - Ring the guy and see if all is good.
