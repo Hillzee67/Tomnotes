@@ -1953,9 +1953,12 @@ function closeQuickAdd(){
   document.getElementById('quickadd-overlay').classList.remove('open');
 }
 
-let quickAddInFlight = false;
-async function submitQuickAdd(){
-  if (quickAddInFlight) return;
+// Chains each add onto the previous one so they always run one at a time
+// (never concurrently, which avoids a sha conflict) but nothing gets
+// silently dropped the way a simple "ignore while busy" guard would.
+let quickAddQueue = Promise.resolve();
+
+function submitQuickAdd(){
   const input = document.getElementById('quickadd-input');
   const title = input.value.trim();
   if (!title) return;
@@ -1966,17 +1969,15 @@ async function submitQuickAdd(){
     setStatus('err', 'events need a date');
     return; // leave the sheet open so a date can be added
   }
+  const type = quickAddType; // capture now, since the sheet may be reopened with a different type before this runs
   closeQuickAdd();
-  quickAddInFlight = true;
-  try{
-    if (quickAddType === 'event'){
-      await appendLineToFile(targetPath, `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false), `Quick add event: ${title}`);
+  quickAddQueue = quickAddQueue.then(() => {
+    if (type === 'event'){
+      return appendLineToFile(targetPath, `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false), `Quick add event: ${title}`);
     } else {
-      await appendLineToFile(targetPath, `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : ''), `Quick add: ${title}`);
+      return appendLineToFile(targetPath, `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : ''), `Quick add: ${title}`);
     }
-  }finally{
-    quickAddInFlight = false;
-  }
+  }).catch(e => { console.error('quick add failed:', e); setStatus('err', e.message); });
 }
 
 document.getElementById('quickadd-input').addEventListener('keydown', e => {
