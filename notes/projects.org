@@ -16,7 +16,6 @@ SCHEDULED: <2026-09-24 Thu>
 SCHEDULED: <2026-09-29 Tue>
 *** DONE Kitchen - work out what to do with the harder panels.
 SCHEDULED: <2026-09-30 Wed>
-** Retic
 ** Ethan's Retic
 *** DONE Ethan's retic - go and have a look and see what is needed.
 SCHEDULED: <2026-09-29 Tue>
