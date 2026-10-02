@@ -29,7 +29,7 @@ SCHEDULED: <2026-09-28 Mon 10:30>
 SCHEDULED: <2026-09-29 Tue>
 *** TODO Fix the oven and silicon at Linc and Maria's house
 SCHEDULED: <2026-10-03 Sat>
-*** TODO Scan Lincs document and email it to him
+*** DONE Scan Lincs document and email it to him
 SCHEDULED: <2026-10-02 Fri>
 *** TODO Finish the retic fix
 SCHEDULED: <2026-10-02 Fri>
