@@ -39,3 +39,5 @@ SCHEDULED: <2026-10-02 Fri>
 SCHEDULED: <2026-10-02 Fri>
 *** TODO Mulch at Ethan's house
 SCHEDULED: <2026-10-03 Sat>
+*** TODO Oil the deck
+SCHEDULED: <2026-10-06 Tue>
