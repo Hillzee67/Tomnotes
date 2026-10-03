@@ -35,7 +35,7 @@ SCHEDULED: <2026-10-02 Fri>
 SCHEDULED: <2026-10-02 Fri>
 *** TODO clean the caravan and put on the cover
 SCHEDULED: <2026-10-02 Fri>
-*** TODO Finish gardening at Ethan's house
+*** DONE Finish gardening at Ethan's house
 SCHEDULED: <2026-10-02 Fri>
 *** TODO Mulch at Ethan's house
 SCHEDULED: <2026-10-03 Sat>
