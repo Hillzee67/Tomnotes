@@ -33,7 +33,7 @@ SCHEDULED: <2026-10-03 Sat>
 SCHEDULED: <2026-10-02 Fri>
 *** TODO Finish the retic fix
 SCHEDULED: <2026-10-02 Fri>
-*** TODO clean the caravan and put on the cover
+*** DONE clean the caravan and put on the cover
 SCHEDULED: <2026-10-02 Fri>
 *** DONE Finish gardening at Ethan's house
 SCHEDULED: <2026-10-02 Fri>
