@@ -27,7 +27,7 @@ SCHEDULED: <2026-09-24 Thu>
 SCHEDULED: <2026-09-28 Mon 10:30>
 *** DONE Ring Mum and Jus to organise a visit
 SCHEDULED: <2026-09-29 Tue>
-*** TODO Fix the oven and silicon at Linc and Maria's house
+*** DONE Fix the oven and silicon at Linc and Maria's house
 SCHEDULED: <2026-10-03 Sat>
 *** DONE Scan Lincs document and email it to him
 SCHEDULED: <2026-10-02 Fri>
