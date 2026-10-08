@@ -41,7 +41,7 @@ SCHEDULED: <2026-10-02 Fri>
 *** TODO Oil the deck
 SCHEDULED: <2026-10-07 Wed>
 *** DONE Fix the fan
-*** TODO Take in the cans and bottles
+*** DONE Take in the cans and bottles
 SCHEDULED: <2026-10-07 Wed>
 *** DONE Get globes for Linc and Eths room
 SCHEDULED: <2026-10-08 Thu>
