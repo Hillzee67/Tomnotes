@@ -381,6 +381,21 @@ async function ghGetImageDataUrl(path){
   try{ return await promise; } catch(e){ delete imageDataCache[path]; throw e; }
 }
 
+// Every code path that reads-then-writes a file (Raw save, toggling a
+// checkbox, quick-add, drag-reorder) goes through this. Without it, two
+// of those paths writing to the same file around the same time can race:
+// each captures its own sha, and whichever PUT lands second gets rejected
+// as a conflict even though nothing was actually wrong — it just didn't
+// know about the other one. Queuing per file (not globally) means
+// different files still write independently and in parallel.
+const fileWriteQueues = {};
+function queueFileWrite(path, workFn){
+  const prev = fileWriteQueues[path] || Promise.resolve();
+  const next = prev.catch(() => {}).then(workFn);
+  fileWriteQueues[path] = next;
+  return next;
+}
+
 async function ghPutFile(path, content, sha, message){
   const url = `${apiBase()}/contents/${path}`;
   const body = {
@@ -719,15 +734,17 @@ function escapeHtml(s){
 async function toggleTask(idx){
   const t = tasksCache[idx];
   if (!t) return;
-  const cached = fileCache[t.file];
-  if (!cached) return;
-  const lines = cached.content.split('\n');
-  lines[t.lineIndex] = lines[t.lineIndex].replace(/^(\*+\s+)(TODO|NEXT|WAITING)\b/, '$1DONE');
-  const newContent = lines.join('\n');
   setStatus('busy', 'saving…');
   try{
-    const res = await ghPutFile(t.file, newContent, cached.sha, `Mark done: ${t.title}`);
-    fileCache[t.file] = {content: newContent, sha: res.content.sha};
+    await queueFileWrite(t.file, async () => {
+      const cached = fileCache[t.file];
+      if (!cached) return;
+      const lines = cached.content.split('\n');
+      lines[t.lineIndex] = lines[t.lineIndex].replace(/^(\*+\s+)(TODO|NEXT|WAITING)\b/, '$1DONE');
+      const newContent = lines.join('\n');
+      const res = await ghPutFile(t.file, newContent, cached.sha, `Mark done: ${t.title}`);
+      fileCache[t.file] = {content: newContent, sha: res.content.sha};
+    });
     t.state = 'DONE';
     setStatus('ok', 'saved');
     renderAgenda();
@@ -767,14 +784,14 @@ async function persistTaskOrder(orderedTasks){
   });
   setStatus('busy', 'saving order…');
   try{
-    for (const file of Object.keys(byFile)){
+    await Promise.all(Object.keys(byFile).map(file => queueFileWrite(file, async () => {
       const {content, sha} = await ghGetFile(file);
       let updated = content;
       const items = byFile[file]; // rewriting each headline in place, so processing order doesn't matter here
       items.forEach(item => { updated = setOrderInContent(updated, item.lineIndex, item.order); });
       const res = await ghPutFile(file, updated, sha, 'Update task order');
       fileCache[file] = {content: updated, sha: res.content.sha};
-    }
+    })));
     setStatus('ok', 'order saved');
   }catch(e){
     setStatus('err', e.message);
@@ -1827,24 +1844,24 @@ const SHORTCUT_HINT = IS_MAC
   ? '⌃⌥T toggle todo · ⌃⌥E event · 📅 pick date for scheduled · tap ▸ to fold'
   : 'ctrl+alt+t toggle todo · ctrl+alt+e event · 📅 pick date for scheduled · tap ▸ to fold';
 
-let saveInFlight = false;
 async function saveFile(path){
-  // Guards against a double-tap firing two overlapping saves — the second
-  // would otherwise race the first and get rejected by GitHub as a
-  // conflict, since its cached sha is stale by the time it lands.
-  if (saveInFlight) return;
-  saveInFlight = true;
+  // Capture the content the user actually wants saved right now — before
+  // queuing, since an earlier queued write for this file might take a
+  // moment to clear first.
   const content = cmInstance ? cmInstance.getValue() : (fileCache[path] ? fileCache[path].content : '');
-  const cached = fileCache[path];
   setStatus('busy', 'saving…');
   try{
-    const res = await ghPutFile(path, content, cached ? cached.sha : null, `Edit ${path}`);
-    fileCache[path] = {content, sha: res.content.sha};
+    await queueFileWrite(path, async () => {
+      // Read the sha now, not earlier — by the time this turn runs, any
+      // write queued ahead of it for this same file has already landed
+      // and updated fileCache, so this is guaranteed current.
+      const cached = fileCache[path];
+      const res = await ghPutFile(path, content, cached ? cached.sha : null, `Edit ${path}`);
+      fileCache[path] = {content, sha: res.content.sha};
+    });
     setStatus('ok', 'saved');
   }catch(e){
     setStatus('err', e.message);
-  }finally{
-    saveInFlight = false;
   }
 }
 
@@ -1997,14 +2014,16 @@ function timestampLine(label, dateStr, timeStr, labeled){
 async function appendLineToFile(path, line, commitMessage){
   setStatus('busy', 'adding…');
   try{
-    let existing = null;
-    try{ existing = await ghGetFile(path); }
-    catch(e){ existing = null; } // file doesn't exist yet — quick-add will create it
-    const newContent = existing
-      ? (existing.content.endsWith('\n') || existing.content === '' ? existing.content + line : existing.content + '\n' + line)
-      : line;
-    const res = await ghPutFile(path, newContent, existing ? existing.sha : null, commitMessage);
-    fileCache[path] = {content: newContent, sha: res.content.sha};
+    await queueFileWrite(path, async () => {
+      let existing = null;
+      try{ existing = await ghGetFile(path); }
+      catch(e){ existing = null; } // file doesn't exist yet — quick-add will create it
+      const newContent = existing
+        ? (existing.content.endsWith('\n') || existing.content === '' ? existing.content + line : existing.content + '\n' + line)
+        : line;
+      const res = await ghPutFile(path, newContent, existing ? existing.sha : null, commitMessage);
+      fileCache[path] = {content: newContent, sha: res.content.sha};
+    });
     setStatus('ok', 'added');
     if (currentTab === 'agenda') refreshAgenda();
   }catch(e){
