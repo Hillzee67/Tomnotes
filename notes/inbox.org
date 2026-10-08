@@ -43,7 +43,7 @@ SCHEDULED: <2026-10-07 Wed>
 *** DONE Fix the fan
 *** TODO Take in the cans and bottles
 SCHEDULED: <2026-10-07 Wed>
-*** TODO Get globes for Linc and Eths room
+*** DONE Get globes for Linc and Eths room
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Text Greg the cupboard guy
 SCHEDULED: <2026-10-08 Thu>
