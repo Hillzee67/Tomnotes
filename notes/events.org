@@ -16,3 +16,5 @@
 <2026-10-05 Mon>
 *** Give Blood
 <2026-10-08 Thu 15:30>
+*** Library books due
+<2026-11-04 Wed>
