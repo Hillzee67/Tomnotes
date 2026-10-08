@@ -34,6 +34,9 @@ SCHEDULED: <2026-09-29 Tue>
 *** DONE Pat follow up with has been done so far
 SCHEDULED: <2026-09-21 Mon>
 ** Classlists 2027
+*** TODO send out the friends preferences
+SCHEDULED: <2026-10-19 Mon>
+*** TODO expereiemnt with the app to see how it will work
 *** DONE Classlists - start to prep the friend selection sheets
 SCHEDULED: <2026-09-25 Fri>
 *** DONE - PP Form
