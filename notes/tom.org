@@ -26,6 +26,8 @@ SCHEDULED: <2026-08-26 Wed>
 
 | Total   |         | 1327.19 |
 
+*** TODO Pay the tax bill - $231
+SCHEDULED: <2026-10-22 Thu>
 *** DONE Pay the rates 1 $643 
 SCHEDULED: <2026-09-18> 
 *** Bills Totals
