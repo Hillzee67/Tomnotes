@@ -18,3 +18,5 @@
 <2026-10-08 Thu 15:30>
 *** Library books due
 <2026-11-04 Wed>
+*** GYMD
+<2026-10-16 Fri>
