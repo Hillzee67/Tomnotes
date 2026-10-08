@@ -49,3 +49,5 @@ SCHEDULED: <2026-10-08 Thu>
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Send the updated duty roster
 SCHEDULED: <2026-10-09 Fri>
+*** TODO Submit the fuel receipts
+SCHEDULED: <2026-10-08 Thu>
