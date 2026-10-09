@@ -96,6 +96,7 @@
   .task.dragging{
     border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,.4); opacity:.9;
   }
+  .task.pending{opacity:.55;}
   .task .meta .file{color:var(--accent-dim);}
   .task.overdue .meta{color:var(--rust);}
   .task.today .meta{color:var(--gold);}
@@ -344,20 +345,45 @@ function ghHeaders(){
 function apiBase(){
   return `https://api.github.com/repos/${settings.owner}/${settings.repo}`;
 }
+// GitHub's API marks responses cacheable for 60s, so the browser can answer
+// a repeat GET from its own cache without asking GitHub — which means a
+// file we just wrote could read back as its old self (stale content AND a
+// stale sha, which then causes false conflicts). A throwaway query
+// parameter makes every read a genuinely fresh one.
+function bust(url){
+  return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+}
+
 async function ghGetDir(path){
-  const url = `${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`;
+  const url = bust(`${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`);
   const res = await fetch(url, {headers: ghHeaders()});
   if (res.status === 404) return [];
   if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
   return res.json();
 }
 async function ghGetFile(path){
-  const url = `${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`;
+  const url = bust(`${apiBase()}/contents/${path}?ref=${encodeURIComponent(settings.branch)}`);
   const res = await fetch(url, {headers: ghHeaders()});
-  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+  if (!res.ok){
+    const err = new Error(`GitHub error ${res.status}: ${(await res.json().catch(() => ({}))).message || res.statusText}`);
+    err.status = res.status;
+    throw err;
+  }
   const data = await res.json();
   const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
   return {content, sha: data.sha};
+}
+
+// One request returns every file path in the repo along with each file's
+// blob sha — in place of one request per folder, and it lets us skip
+// re-downloading any file whose sha hasn't changed since we last fetched it.
+async function ghListTree(){
+  const url = bust(`${apiBase()}/git/trees/${encodeURIComponent(settings.branch)}?recursive=1`);
+  const res = await fetch(url, {headers: ghHeaders()});
+  if (!res.ok) throw new Error(`GitHub error ${res.status}`);
+  const data = await res.json();
+  if (data.truncated) throw new Error('tree truncated');
+  return data.tree.filter(e => e.type === 'blob');
 }
 
 const IMAGE_MIME = {jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp'};
@@ -406,23 +432,42 @@ async function ghPutFile(path, content, sha, message){
   if (sha) body.sha = sha;
   const res = await fetch(url, {method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if (!res.ok){
-    if (res.status === 409){
-      throw new Error('This file changed elsewhere since it was last loaded here — close and reopen it, then try again.');
-    }
-    throw new Error(`GitHub error ${res.status}: ${(await res.json()).message || res.statusText}`);
+    const err = new Error(res.status === 409
+      ? 'This file changed elsewhere since it was last loaded here — close and reopen it, then try again.'
+      : `GitHub error ${res.status}: ${(await res.json().catch(() => ({}))).message || res.statusText}`);
+    err.status = res.status;
+    throw err;
   }
   return res.json();
 }
-async function listOrgFiles(path){
+
+// The original folder-by-folder walk — kept only as a fallback in case the
+// single-request tree listing fails (e.g. a repo too large for it).
+async function listOrgFilesViaDirs(path){
   let out = [];
-  let entries;
-  try{ entries = await ghGetDir(path); } catch(e){ throw e; }
+  const entries = await ghGetDir(path);
   if (!Array.isArray(entries)) return out;
   for (const e of entries){
-    if (e.type === 'dir') out = out.concat(await listOrgFiles(e.path));
+    if (e.type === 'dir') out = out.concat(await listOrgFilesViaDirs(e.path));
     else if (e.type === 'file' && e.path.endsWith('.org')) out.push(e.path);
   }
   return out;
+}
+
+// Returns [{path, sha}] for every .org file under the notes folder.
+async function listOrgEntries(){
+  try{
+    const prefix = settings.notesPath + '/';
+    return (await ghListTree())
+      .filter(b => b.path.startsWith(prefix) && b.path.endsWith('.org'))
+      .map(b => ({path: b.path, sha: b.sha}));
+  }catch(e){
+    return (await listOrgFilesViaDirs(settings.notesPath)).map(p => ({path: p, sha: null}));
+  }
+}
+
+async function listOrgFiles(){
+  return (await listOrgEntries()).map(e => e.path);
 }
 
 /* ---------- org parsing ---------- */
@@ -582,7 +627,7 @@ function buildICS(events){
 async function syncCalendar(){
   setStatus('busy', 'syncing calendar…');
   try{
-    const events = tasksCache.filter(t => t.type === 'event' && t.scheduled);
+    const events = tasksCache.filter(t => t.type === 'event' && t.scheduled && !t.pending);
     const ics = buildICS(events);
     let existing = null;
     try{ existing = await ghGetFile('agenda.ics'); } catch(e){ existing = null; }
@@ -612,22 +657,71 @@ function dayLabel(d, offset){
 }
 
 /* ---------- agenda ---------- */
-async function refreshAgenda(){
+// Local-only changes that haven't been confirmed by GitHub yet. If a full
+// refresh lands while one is still saving, these keep it from briefly
+// snapping back to how the file looked before the change.
+const pendingDone = new Set();   // "file::line" of tasks checked off locally
+const pendingOrder = {};         // "file::line" -> order value dragged locally
+let agendaRenderDeferred = false;
+
+// Re-renders the Agenda only if it's what's on screen (a background save
+// finishing must never paint over the Files/Settings tab), and never while
+// a drag is in progress (replacing the DOM mid-drag would kill the drag).
+function renderAgendaIfVisible(){
+  if (currentTab !== 'agenda') return;
+  if (dragState){ agendaRenderDeferred = true; return; }
+  renderAgenda();
+}
+
+let refreshPromise = null;
+function refreshAgenda(){
+  if (refreshPromise) return refreshPromise; // one already running — share it
+  refreshPromise = doRefreshAgenda().finally(() => { refreshPromise = null; });
+  return refreshPromise;
+}
+
+async function doRefreshAgenda(){
   setStatus('busy', 'syncing…');
   try{
-    const files = await listOrgFiles(settings.notesPath);
+    const entries = await listOrgEntries();
+    // Download only files that are new or whose sha changed, and do them
+    // all at once. Each goes through the per-file queue so a download can
+    // never land on top of (and overwrite) a save that finished meanwhile.
+    await Promise.all(entries.map(e => queueFileWrite(e.path, async () => {
+      const cached = fileCache[e.path];
+      if (cached && e.sha && cached.sha === e.sha) return;
+      const {content, sha} = await ghGetFile(e.path);
+      fileCache[e.path] = {content, sha};
+    })));
     const all = [];
-    for (const path of files){
-      const {content, sha} = await ghGetFile(path);
-      fileCache[path] = {content, sha};
-      all.push(...parseOrgFile(path, content));
-    }
+    entries.forEach(e => {
+      if (fileCache[e.path]) all.push(...parseOrgFile(e.path, fileCache[e.path].content));
+    });
+    all.forEach(t => {
+      const key = t.file + '::' + t.lineIndex;
+      if (pendingDone.has(key)) t.state = 'DONE';
+      if (key in pendingOrder) t.order = pendingOrder[key];
+    });
     tasksCache = all;
     setStatus('ok', `synced ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`);
   }catch(e){
     setStatus('err', e.message);
   }
-  renderAgenda();
+  renderAgendaIfVisible();
+}
+
+// Saving status that stays accurate when several saves overlap.
+let pendingWrites = 0, writeBatchFailed = false;
+function writeStarted(label){
+  if (pendingWrites === 0) writeBatchFailed = false;
+  pendingWrites++;
+  setStatus('busy', pendingWrites > 1 ? `saving ${pendingWrites}…` : label);
+}
+function writeFinished(err){
+  pendingWrites--;
+  if (err){ writeBatchFailed = true; setStatus('err', err.message); }
+  else if (pendingWrites > 0) setStatus('busy', `saving ${pendingWrites}…`);
+  else if (!writeBatchFailed) setStatus('ok', 'saved');
 }
 
 function orderSort(a, b){
@@ -691,9 +785,21 @@ function taskRow(t, cls){
   const repeat = t.deadlineRepeat || t.scheduledRepeat;
   const repLabel = repeat ? repeatLabel(repeat) : '';
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
-  const idx = tasksCache.indexOf(t);
+  const fileArg = t.file.replace(/'/g, "\\'");
   const dragHandle = `<button class="drag-handle" aria-label="drag to reorder" title="drag to reorder">⠿</button>`;
   const jumpAttrs = `onclick="openTaskInRaw('${t.file.replace(/'/g,"\\'")}', ${t.lineIndex})" style="cursor:pointer;"`;
+  if (t.pending){
+    // Shown instantly while GitHub is still saving it. Its line number isn't
+    // known yet, so it can't be checked off, dragged, or opened until the
+    // save lands and it's replaced by the real thing.
+    return `<div class="task ${cls} pending${t.type === 'event' ? ' event' : ''}">
+      ${t.type === 'event' ? '<span class="dot" aria-hidden="true"></span>' : '<span class="box" style="opacity:.4"></span>'}
+      <div class="body">
+        <div class="title">${escapeHtml(t.title)}</div>
+        <div class="meta">saving…</div>
+      </div>
+    </div>`;
+  }
   if (t.type === 'event'){
     const timeLabel = t.time ? `${t.time} · ` : '';
     return `<div class="task ${cls} event" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
@@ -706,7 +812,7 @@ function taskRow(t, cls){
     </div>`;
   }
   return `<div class="task ${cls}" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
-    <button class="box" onclick="toggleTask(${idx})" aria-label="mark done"></button>
+    <button class="box" onclick="toggleTask('${fileArg}', ${t.lineIndex})" aria-label="mark done"></button>
     <div class="body" ${jumpAttrs}>
       <div class="title">${escapeHtml(t.title)}</div>
       <div class="meta"><span class="file">${escapeHtml(t.file.split('/').pop())}</span>${dateLabel ? ' · ' + dateLabel : ''}${repLabel ? ' · ' + repLabel : ''}</div>
@@ -731,25 +837,50 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function toggleTask(idx){
-  const t = tasksCache[idx];
+async function toggleTask(file, lineIndex){
+  const t = tasksCache.find(x => x.file === file && x.lineIndex === lineIndex && !x.pending);
   if (!t) return;
-  setStatus('busy', 'saving…');
+  const key = file + '::' + lineIndex;
+  const prevState = t.state;
+
+  // Update the screen right away — the save to GitHub takes a second or
+  // two, and there's no reason to make you watch it.
+  t.state = 'DONE';
+  pendingDone.add(key);
+  renderAgendaIfVisible();
+
+  writeStarted('saving…');
   try{
-    await queueFileWrite(t.file, async () => {
-      const cached = fileCache[t.file];
-      if (!cached) return;
-      const lines = cached.content.split('\n');
-      lines[t.lineIndex] = lines[t.lineIndex].replace(/^(\*+\s+)(TODO|NEXT|WAITING)\b/, '$1DONE');
-      const newContent = lines.join('\n');
-      const res = await ghPutFile(t.file, newContent, cached.sha, `Mark done: ${t.title}`);
-      fileCache[t.file] = {content: newContent, sha: res.content.sha};
+    await queueFileWrite(file, async () => {
+      const tryToggle = async cached => {
+        const lines = cached.content.split('\n');
+        lines[lineIndex] = lines[lineIndex].replace(/^(\*+\s+)(TODO|NEXT|WAITING)\b/, '$1DONE');
+        const newContent = lines.join('\n');
+        const res = await ghPutFile(file, newContent, cached.sha, `Mark done: ${t.title}`);
+        fileCache[file] = {content: newContent, sha: res.content.sha};
+      };
+      if (!fileCache[file]) fileCache[file] = await ghGetFile(file);
+      try{
+        await tryToggle(fileCache[file]);
+      }catch(e){
+        if (e.status !== 409) throw e;
+        // Changed elsewhere since we last looked. Re-read it, and only go
+        // ahead if this same task is still on the same line.
+        const fresh = await ghGetFile(file);
+        fileCache[file] = fresh;
+        if (!(fresh.content.split('\n')[lineIndex] || '').includes(t.title)){
+          throw new Error('That file changed elsewhere — refresh and try again.');
+        }
+        await tryToggle(fresh);
+      }
     });
-    t.state = 'DONE';
-    setStatus('ok', 'saved');
-    renderAgenda();
+    writeFinished(null);
   }catch(e){
-    setStatus('err', e.message);
+    t.state = prevState;           // the save really failed — undo the change on screen
+    writeFinished(e);
+    renderAgendaIfVisible();
+  }finally{
+    pendingDone.delete(key);
   }
 }
 
@@ -774,30 +905,43 @@ function setOrderInContent(content, lineIndex, orderValue){
 // Tasks are grouped by file and, within a file, processed bottom-to-top so
 // that inserting drawer lines for one task never shifts the line numbers
 // of tasks still waiting to be processed above it.
-let reorderInFlight = false;
-
 async function persistTaskOrder(orderedTasks){
-  reorderInFlight = true;
   const byFile = {};
-  orderedTasks.forEach((t, idx) => {
-    (byFile[t.file] = byFile[t.file] || []).push({lineIndex: t.lineIndex, order: idx});
+  const keys = [];
+  orderedTasks.forEach((o, idx) => {
+    const key = o.file + '::' + o.lineIndex;
+    keys.push(key);
+    pendingOrder[key] = idx;
+    const t = tasksCache.find(x => x.file === o.file && x.lineIndex === o.lineIndex && !x.pending);
+    if (t) t.order = idx;                      // the screen already shows this; keep our data in step with it
+    (byFile[o.file] = byFile[o.file] || []).push({lineIndex: o.lineIndex, order: idx});
   });
-  setStatus('busy', 'saving order…');
+
+  writeStarted('saving order…');
   try{
     await Promise.all(Object.keys(byFile).map(file => queueFileWrite(file, async () => {
-      const {content, sha} = await ghGetFile(file);
-      let updated = content;
-      const items = byFile[file]; // rewriting each headline in place, so processing order doesn't matter here
-      items.forEach(item => { updated = setOrderInContent(updated, item.lineIndex, item.order); });
-      const res = await ghPutFile(file, updated, sha, 'Update task order');
-      fileCache[file] = {content: updated, sha: res.content.sha};
+      const apply = content => byFile[file].reduce((c, item) => setOrderInContent(c, item.lineIndex, item.order), content);
+      if (!fileCache[file]) fileCache[file] = await ghGetFile(file);
+      try{
+        const updated = apply(fileCache[file].content);
+        const res = await ghPutFile(file, updated, fileCache[file].sha, 'Update task order');
+        fileCache[file] = {content: updated, sha: res.content.sha};
+      }catch(e){
+        if (e.status !== 409) throw e;
+        const fresh = await ghGetFile(file);           // changed elsewhere — retry once on the fresh copy
+        const updated = apply(fresh.content);
+        const res = await ghPutFile(file, updated, fresh.sha, 'Update task order');
+        fileCache[file] = {content: updated, sha: res.content.sha};
+      }
     })));
-    setStatus('ok', 'order saved');
+    writeFinished(null);
   }catch(e){
-    setStatus('err', e.message);
+    writeFinished(e);
+    keys.forEach(k => delete pendingOrder[k]);
+    refreshAgenda();                               // the save failed — resync the screen with what's really saved
+    return;
   }
-  await refreshAgenda();
-  reorderInFlight = false;
+  keys.forEach(k => delete pendingOrder[k]);
 }
 
 let dragState = null;
@@ -806,7 +950,6 @@ function initAgendaDragHandlers(){
   const main = document.getElementById('main');
 
   main.addEventListener('pointerdown', e => {
-    if (reorderInFlight) return; // a previous drag is still saving — starting another here would race it
     const handle = e.target.closest('.drag-handle');
     if (!handle) return;
     const row = handle.closest('.task');
@@ -841,9 +984,11 @@ function initAgendaDragHandlers(){
     const {row, section} = dragState;
     row.classList.remove('dragging');
     const orderedTasks = Array.from(section.querySelectorAll(':scope > .task'))
+      .filter(r => r.dataset.file)            // skip "saving…" placeholders — they have no line number yet
       .map(r => ({file: r.dataset.file, lineIndex: parseInt(r.dataset.line, 10)}));
     dragState = null;
     persistTaskOrder(orderedTasks);
+    if (agendaRenderDeferred){ agendaRenderDeferred = false; renderAgendaIfVisible(); }
   };
   main.addEventListener('pointerup', finishDrag);
   main.addEventListener('pointercancel', finishDrag);
@@ -1951,17 +2096,22 @@ async function openQuickAdd(){
   setTimeout(() => input.focus(), 50);
 
   const select = document.getElementById('quickadd-file');
-  select.innerHTML = '<option>loading files…</option>';
-  try{
-    const files = await listOrgFiles(settings.notesPath);
-    const relLabel = f => f.startsWith(settings.notesPath + '/') ? f.slice(settings.notesPath.length + 1) : f;
-    const defaults = [capturePath(), eventsPath()];
+  const relLabel = f => f.startsWith(settings.notesPath + '/') ? f.slice(settings.notesPath.length + 1) : f;
+  const fill = files => {
     // Make sure the configured quick-add/events files are offered even if
     // they don't exist on GitHub yet (they'll be created on first use).
-    const allPaths = [...new Set([...defaults, ...files])];
+    const allPaths = [...new Set([capturePath(), eventsPath(), ...files])];
     select.innerHTML = allPaths.map(f => `<option value="${f}">${escapeHtml(relLabel(f))}</option>`).join('');
-  }catch(e){
-    select.innerHTML = `<option value="${capturePath()}">${escapeHtml(settings.captureFile || 'inbox.org')}</option>`;
+  };
+  // The Agenda has already loaded every .org file, so use that list and open
+  // instantly rather than asking GitHub again every time "+" is tapped.
+  const known = Object.keys(fileCache).filter(f => f.startsWith(settings.notesPath + '/') && f.endsWith('.org'));
+  if (known.length){
+    fill(known);
+  } else {
+    select.innerHTML = '<option>loading files…</option>';
+    try{ fill(await listOrgFiles()); }
+    catch(e){ select.innerHTML = `<option value="${capturePath()}">${escapeHtml(settings.captureFile || 'inbox.org')}</option>`; }
   }
   setQuickAddType('task');
 }
@@ -1970,10 +2120,17 @@ function closeQuickAdd(){
   document.getElementById('quickadd-overlay').classList.remove('open');
 }
 
-// Chains each add onto the previous one so they always run one at a time
-// (never concurrently, which avoids a sha conflict) but nothing gets
-// silently dropped the way a simple "ignore while busy" guard would.
-let quickAddQueue = Promise.resolve();
+let pendingOpCounter = 0;
+
+// Shows a just-submitted item on the Agenda immediately, as a dimmed
+// "saving…" placeholder, while GitHub catches up in the background.
+function addPendingItems(path, text){
+  const id = ++pendingOpCounter;
+  const items = parseOrgFile(path, text).map(t => ({...t, pending: true, pendingId: id}));
+  tasksCache = tasksCache.concat(items);
+  renderAgendaIfVisible();
+  return id;
+}
 
 function submitQuickAdd(){
   const input = document.getElementById('quickadd-input');
@@ -1988,13 +2145,14 @@ function submitQuickAdd(){
   }
   const type = quickAddType; // capture now, since the sheet may be reopened with a different type before this runs
   closeQuickAdd();
-  quickAddQueue = quickAddQueue.then(() => {
-    if (type === 'event'){
-      return appendLineToFile(targetPath, `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false), `Quick add event: ${title}`);
-    } else {
-      return appendLineToFile(targetPath, `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : ''), `Quick add: ${title}`);
-    }
-  }).catch(e => { console.error('quick add failed:', e); setStatus('err', e.message); });
+  const text = type === 'event'
+    ? `*** ${title}\n` + timestampLine(null, dateStr, timeStr, false)
+    : `*** TODO ${title}\n` + (dateStr ? timestampLine('SCHEDULED', dateStr, timeStr, true) : '');
+  const message = type === 'event' ? `Quick add event: ${title}` : `Quick add: ${title}`;
+  const opId = addPendingItems(targetPath, text);
+  // Writes to the same file are already queued one at a time inside
+  // appendLineToFile, and writes to different files can run side by side.
+  appendLineToFile(targetPath, text, message, opId);
 }
 
 document.getElementById('quickadd-input').addEventListener('keydown', e => {
@@ -2011,23 +2169,48 @@ function timestampLine(label, dateStr, timeStr, labeled){
   return (labeled ? `${label}: ${ts}` : ts) + '\n';
 }
 
-async function appendLineToFile(path, line, commitMessage){
-  setStatus('busy', 'adding…');
+async function appendLineToFile(path, line, commitMessage, opId){
+  writeStarted('adding…');
   try{
+    let startLine = 0, finalContent = '';
     await queueFileWrite(path, async () => {
-      let existing = null;
-      try{ existing = await ghGetFile(path); }
-      catch(e){ existing = null; } // file doesn't exist yet — quick-add will create it
-      const newContent = existing
-        ? (existing.content.endsWith('\n') || existing.content === '' ? existing.content + line : existing.content + '\n' + line)
-        : line;
-      const res = await ghPutFile(path, newContent, existing ? existing.sha : null, commitMessage);
-      fileCache[path] = {content: newContent, sha: res.content.sha};
+      const build = base => base === null ? line
+        : (base === '' || base.endsWith('\n') ? base + line : base + '\n' + line);
+      // Use the copy we already have rather than downloading it first —
+      // that saves a whole round trip to GitHub on every add.
+      let existing = fileCache[path] || null;
+      for (let attempt = 0; attempt < 2; attempt++){
+        const base = existing ? existing.content : null;
+        const newContent = build(base);
+        try{
+          const res = await ghPutFile(path, newContent, existing ? existing.sha : null, commitMessage);
+          fileCache[path] = {content: newContent, sha: res.content.sha};
+          startLine = (base === null || base === '') ? 0
+            : (base.endsWith('\n') ? base.split('\n').length - 1 : base.split('\n').length);
+          finalContent = newContent;
+          return;
+        }catch(e){
+          // 409 = our copy was out of date; 422 = we tried to create a file
+          // that already exists. Either way, re-read the real file once and retry.
+          if (attempt === 0 && (e.status === 409 || e.status === 422)){
+            try{ existing = await ghGetFile(path); }catch(e2){ existing = null; }
+            continue;
+          }
+          throw e;
+        }
+      }
     });
-    setStatus('ok', 'added');
-    if (currentTab === 'agenda') refreshAgenda();
+    // Swap the placeholder for the real, correctly-addressed tasks.
+    const fresh = parseOrgFile(path, finalContent).filter(t => t.lineIndex >= startLine);
+    tasksCache = tasksCache
+      .filter(t => t.pendingId !== opId && !(t.file === path && !t.pending && t.lineIndex >= startLine))
+      .concat(fresh);
+    renderAgendaIfVisible();
+    writeFinished(null);
   }catch(e){
-    setStatus('err', e.message);
+    tasksCache = tasksCache.filter(t => t.pendingId !== opId);
+    renderAgendaIfVisible();
+    writeFinished(e);
   }
 }
 
