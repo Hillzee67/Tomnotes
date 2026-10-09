@@ -48,7 +48,7 @@ SCHEDULED: <2026-10-08 Thu>
 *** TODO Text Greg the cupboard guy
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Send the updated duty roster
-SCHEDULED: <2026-10-09 Fri>
+SCHEDULED: <2026-10-11 Sun>
 *** DONE Submit the fuel receipts
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Help Linc fix his retic
