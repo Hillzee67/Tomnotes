@@ -51,3 +51,5 @@ SCHEDULED: <2026-10-08 Thu>
 SCHEDULED: <2026-10-09 Fri>
 *** DONE Submit the fuel receipts
 SCHEDULED: <2026-10-08 Thu>
+*** TODO Help Linc fix his retic
+SCHEDULED: <2026-10-10 Sat>
