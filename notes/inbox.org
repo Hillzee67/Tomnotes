@@ -50,8 +50,7 @@ SCHEDULED: <2026-10-12 Mon>
 SCHEDULED: <2026-10-11 Sun>
 *** DONE Submit the fuel receipts
 SCHEDULED: <2026-10-08 Thu>
-*** TODO Help Linc fix his retic
-SCHEDULED: <2026-10-11 Sun>
+*** TODO Help Linc fix his retic 
 *** DONE Hang Reagan's TV
 SCHEDULED: <2026-10-11 Sun>
 *** TODO Take the new kids to their classes
