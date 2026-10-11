@@ -51,6 +51,6 @@ SCHEDULED: <2026-10-11 Sun>
 *** DONE Submit the fuel receipts
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Help Linc fix his retic
-SCHEDULED: <2026-10-10 Sat>
+SCHEDULED: <2026-10-11 Sun>
 *** TODO Hang Reagan's TV
 SCHEDULED: <2026-10-11 Sun>
