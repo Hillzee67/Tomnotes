@@ -52,7 +52,7 @@ SCHEDULED: <2026-10-11 Sun>
 SCHEDULED: <2026-10-08 Thu>
 *** TODO Help Linc fix his retic
 SCHEDULED: <2026-10-11 Sun>
-*** TODO Hang Reagan's TV
+*** DONE Hang Reagan's TV
 SCHEDULED: <2026-10-11 Sun>
 *** TODO Take the new kids to their classes
 SCHEDULED: <2026-10-12 Mon 08:30>
