@@ -55,3 +55,4 @@ SCHEDULED: <2026-10-08 Thu>
 SCHEDULED: <2026-10-11 Sun>
 *** TODO Take the new kids to their classes
 SCHEDULED: <2026-10-12 Mon 08:30>
+*** TODO Look at the PAT testing for Year 2 & 4
