@@ -1,6 +1,16 @@
 
-*** Duty - Monday 1st lunch Undercover Area
+*** Duty - Mon 1st lunch Undercover Area
 <2026-10-12 Mon 13:20 +7d>
+*** Duty - Tues 2nd Lunch Undercover Area
+<2026-10-13 Tue 13:47 +7d>
+*** Duty - Wed Morning Lib
+<2026-10-14 Wed 08:15 +7d>
+*** Duty - Wed 1st Lunch Nature Play
+<2026-10-14 Wed 13:20 +7d>
+*** Duty - Thurs 2nd Lunch New Area
+<2026-10-15 Thu 13:47 +7d>
+*** Duty - Fri Recess Kindy
+<2026-10-16 Fri 11:10 +14d>
 *** Shop for a hair cutter
 <2026-09-18 Fri 10:30>
 *** OH&S meeting
