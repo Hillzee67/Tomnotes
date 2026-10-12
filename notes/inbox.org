@@ -66,3 +66,5 @@ SCHEDULED: <2026-10-12 Mon>
 SCHEDULED: <2026-10-12 Mon>
 *** TODO Complete the PAT Testing overviews for each Year level
 SCHEDULED: <2026-10-13 Tue>
+*** TODO Start building the spreadsheet for classes
+SCHEDULED: <2026-10-14 Wed>
