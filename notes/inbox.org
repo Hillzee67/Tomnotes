@@ -60,7 +60,7 @@ SCHEDULED: <2026-10-12 Mon>
 *** TODO Look into the new maths program
 *** DONE Send the new Duty Roster to Emily
 SCHEDULED: <2026-10-12 Mon>
-*** TODO Email reports to the Fergusons
+*** DONE Email reports to the Fergusons
 SCHEDULED: <2026-10-12 Mon>
 *** TODO Staff Meeting Ideas
 SCHEDULED: <2026-10-12 Mon>
