@@ -44,7 +44,7 @@ SCHEDULED: <2026-10-07 Wed>
 SCHEDULED: <2026-10-07 Wed>
 *** DONE Get globes for Linc and Eths room
 SCHEDULED: <2026-10-08 Thu>
-*** TODO Text Greg the cupboard guy
+*** DONE Text Greg the cupboard guy
 SCHEDULED: <2026-10-12 Mon>
 *** DONE Send the updated duty roster
 SCHEDULED: <2026-10-11 Sun>
