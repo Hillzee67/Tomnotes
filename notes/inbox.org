@@ -68,3 +68,4 @@ SCHEDULED: <2026-10-12 Mon>
 SCHEDULED: <2026-10-13 Tue>
 *** TODO Start building the spreadsheet for classes
 SCHEDULED: <2026-10-14 Wed>
+*** TODO Decide about PAT testing redo or not ?
