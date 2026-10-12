@@ -53,7 +53,7 @@ SCHEDULED: <2026-10-08 Thu>
 *** TODO Help Linc fix his retic 
 *** DONE Hang Reagan's TV
 SCHEDULED: <2026-10-11 Sun>
-*** TODO Take the new kids to their classes
+*** DONE Take the new kids to their classes
 SCHEDULED: <2026-10-12 Mon 08:30>
 *** TODO Look at the PAT testing for Year 2 & 4
 *** TODO Look into the new maths program
