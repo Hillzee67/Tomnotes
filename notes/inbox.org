@@ -62,5 +62,5 @@ SCHEDULED: <2026-10-12 Mon>
 SCHEDULED: <2026-10-12 Mon>
 *** DONE Email reports to the Fergusons
 SCHEDULED: <2026-10-12 Mon>
-*** TODO Staff Meeting Ideas
+*** DONE Staff Meeting Ideas
 SCHEDULED: <2026-10-12 Mon>
