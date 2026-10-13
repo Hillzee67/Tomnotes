@@ -76,3 +76,5 @@ SCHEDULED: <2026-10-13 Tue>
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Relief for aspirant leaders James and rhana for next Thursday
 SCHEDULED: <2026-10-14 Wed>
+*** TODO Bright path science for Ben
+SCHEDULED: <2026-10-14 Wed>
