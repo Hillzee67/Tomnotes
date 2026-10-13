@@ -72,3 +72,5 @@ SCHEDULED: <2026-10-14 Wed>
 SCHEDULED: <2026-10-13 Tue>
 *** TODO Update the assessment schedule
 SCHEDULED: <2026-10-13 Tue>
+*** TODO Get relief for Rhana and Fletcher for Monday maths pd
+SCHEDULED: <2026-10-14 Wed>
