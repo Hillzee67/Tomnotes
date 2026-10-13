@@ -65,7 +65,6 @@ SCHEDULED: <2026-10-12 Mon>
 *** DONE Staff Meeting Ideas
 SCHEDULED: <2026-10-12 Mon>
 *** TODO Complete the PAT Testing overviews for each Year level
-SCHEDULED: <2026-10-13 Tue>
 *** TODO Start building the spreadsheet for classes
 SCHEDULED: <2026-10-14 Wed>
 *** DONE Decide about PAT testing redo or not ?
