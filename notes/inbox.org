@@ -79,3 +79,4 @@ SCHEDULED: <2026-10-14 Wed>
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Add more data to Mosaic
 SCHEDULED: <2026-10-14 Wed>
+*** TODO Add the grand relay list to the aths score sheet
