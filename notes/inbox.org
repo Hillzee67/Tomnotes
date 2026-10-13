@@ -70,7 +70,7 @@ SCHEDULED: <2026-10-14 Wed>
 *** DONE Decide about PAT testing redo or not ?
 SCHEDULED: <2026-10-13 Tue>
 *** TODO Update the assessment schedule
-SCHEDULED: <2026-10-13 Tue>
+SCHEDULED: <2026-10-14 Wed>
 *** TODO Get relief for Rhana and Fletcher for Monday maths pd
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Relief for aspirant leaders James and rhana for next Thursday
