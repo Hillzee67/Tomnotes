@@ -77,3 +77,5 @@ SCHEDULED: <2026-10-14 Wed>
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Bright path science for Ben
 SCHEDULED: <2026-10-14 Wed>
+*** TODO Add more data to Mosaic
+SCHEDULED: <2026-10-14 Wed>
