@@ -141,6 +141,7 @@
   .CodeMirror-foldgutter-open:after{content:"▾"; color:var(--text-dim); cursor:pointer; padding-left:2px;}
   .CodeMirror-foldgutter-folded:after{content:"▸"; color:var(--accent); cursor:pointer; padding-left:2px;}
   .CodeMirror-foldmarker{color:var(--text-dim); font-style:italic; cursor:pointer; padding:0 2px;}
+  .cm-done-fold{display:inline-block; width:0; padding:0; margin:0;}
   .CodeMirror-cursor{border-left:1.5px solid var(--accent);}
   .CodeMirror-selected{background:rgba(127,168,111,.25) !important;}
   .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{color:var(--text);}
@@ -1097,6 +1098,7 @@ function renderEditorPane(path){
         <button class="ghost" onclick="openImagePicker()">🖼 add image</button>
         <button class="ghost" onclick="insertTableTemplate()">▦ table</button>
         <button class="ghost" onclick="sumTable()">Σ sum</button>
+        <button class="ghost" onclick="fixIndentedHeadlines()" title="Pull any indented headlines back to the left margin">⇤ fix indents</button>
       </div>
       <div id="editor-cm"></div>`;
     initRawEditor(content, path);
@@ -1188,7 +1190,32 @@ function initRawEditor(content, path){
         alignTable(cm);
         return;
       }
-      return CodeMirror.Pass; // not in a table — use CodeMirror's normal Tab behavior
+      if (selectionTouchesHeadline(cm)) return; // Tab must never push a headline off column 0
+      return CodeMirror.Pass; // otherwise use CodeMirror's normal Tab behavior
+    },
+    'Shift-Tab': cm => { if (selectionTouchesHeadline(cm)) return; return CodeMirror.Pass; },
+    'Enter': cm => {
+      // CodeMirror's default copies the previous line's indentation onto the
+      // new line, so one stray leading space spreads down the file as you
+      // type. New lines start at column 0 — except under a list item, where
+      // carrying the indent over is what you want.
+      const prev = cm.getLine(cm.getCursor('from').line);
+      const list = prev.match(/^(\s*)([-+]|\d+[.)])\s/);
+      cm.replaceSelection('\n' + (list ? list[1] : ''), 'end', '+input');
+    },
+    'Backspace': cm => {
+      if (!cm.somethingSelected() && foldEndsRightBefore(cm, cm.getCursor())){
+        setStatus('err', 'hidden/folded lines are just above — expand them first to edit across that boundary');
+        return;
+      }
+      return CodeMirror.Pass;
+    },
+    'Delete': cm => {
+      if (!cm.somethingSelected() && foldStartsRightAfter(cm, cm.getCursor())){
+        setStatus('err', 'hidden/folded lines are just below — expand them first to edit across that boundary');
+        return;
+      }
+      return CodeMirror.Pass;
     }
   });
   let reconcileTimer = null;
@@ -1351,6 +1378,71 @@ function doneRangeFinder(cm, start){
 // Folding is purely visual — cm.getValue() always returns the full,
 // unmodified text regardless of what's currently hidden — so toggling this
 // can never lose or alter any content, saved or not.
+// An empty-string widget gets CodeMirror's stock "CodeMirror-foldmarker"
+// class, which carries padding — and one of those sits in front of the next
+// visible line for every hidden item, so a todo following a few hidden ones
+// looked indented by a space that isn't actually there. This marker has no
+// width, so hiding items leaves no trace at all.
+function selectionTouchesHeadline(cm){
+  return cm.listSelections().some(r => {
+    for (let l = r.from().line; l <= r.to().line; l++) if (/^\*+\s/.test(cm.getLine(l))) return true;
+    return false;
+  });
+}
+
+// Backspace at the very start of a line deletes the line break before it.
+// If a folded or hidden range ends right there, CodeMirror quietly unfolds
+// it and glues this line onto the end of the hidden text
+// ("*** DONE a" + "*** TODO b" -> "*** DONE a*** TODO b"). Refuse instead.
+function foldEndsRightBefore(cm, pos){
+  if (pos.ch !== 0) return false;
+  const prevEnd = pos.line > 0 ? {line: pos.line - 1, ch: cm.getLine(pos.line - 1).length} : null;
+  return cm.getAllMarks().some(m => {
+    if (!m.__isFold) return false;
+    const r = m.find(); if (!r) return false;
+    return (r.to.line === pos.line && r.to.ch === 0) || (prevEnd && r.to.line === prevEnd.line && r.to.ch === prevEnd.ch);
+  });
+}
+
+// Same hazard in the other direction: Delete at the end of a line removes
+// the line break after it, which would pull hidden text up onto this line.
+function foldStartsRightAfter(cm, pos){
+  if (pos.ch !== cm.getLine(pos.line).length) return false;
+  return cm.getAllMarks().some(m => {
+    if (!m.__isFold) return false;
+    const r = m.find(); if (!r) return false;
+    return (r.from.line === pos.line && r.from.ch === pos.ch) || (r.from.line === pos.line + 1 && r.from.ch === 0);
+  });
+}
+
+// Pulls mis-indented task headlines back to column 0, where org (and this
+// app's hide-done, folding and Agenda) expect headlines to be. Only touches
+// lines that are unmistakably headlines — a task keyword after the
+// asterisks, or two or more asterisks — so an indented "* bullet" list item
+// is left alone.
+function fixIndentedHeadlines(){
+  if (!cmInstance) return;
+  const cm = cmInstance;
+  let fixed = 0;
+  cm.operation(() => {
+    for (let i = 0; i < cm.lineCount(); i++){
+      const line = cm.getLine(i);
+      const m = line.match(/^([ \t]+)(\*+\s+(?:TODO|NEXT|WAITING|DONE|CANCELLED)\b.*|\*{2,}\s.*)$/);
+      if (!m) continue;
+      cm.replaceRange('', {line: i, ch: 0}, {line: i, ch: m[1].length});
+      fixed++;
+    }
+  });
+  setStatus('ok', fixed ? `un-indented ${fixed} headline${fixed === 1 ? '' : 's'} — remember to save`
+                        : 'no indented headlines found — any gap you see is only visual');
+}
+
+function makeDoneFoldWidget(){
+  const w = document.createElement('span');
+  w.className = 'cm-done-fold';
+  return w;
+}
+
 function applyHideDoneFolds(cm){
   const cursorLine = cm.getCursor().line;
   const lineCount = cm.lineCount();
@@ -1359,9 +1451,15 @@ function applyHideDoneFolds(cm){
     if (!/^\*+\s+(DONE|CANCELLED)\b/.test(line)) continue;
     if (hideDoneItems){
       const range = doneRangeFinder(cm, CodeMirror.Pos(i, 0));
-      if (range && cursorLine >= range.from.line && cursorLine <= range.to.line) continue; // cursor is inside — don't hide it mid-edit
+      // The hidden range runs to column 0 of the line *after* the item (it
+      // swallows the line break), but that next line isn't part of the item —
+      // so only count it as "the cursor is inside" if the cursor is on one of
+      // the item's own lines. Otherwise a done item directly above the line
+      // you were last editing would refuse to hide.
+      const lastOwnLine = range && range.to.ch === 0 ? range.to.line - 1 : (range && range.to.line);
+      if (range && cursorLine >= range.from.line && cursorLine <= lastOwnLine) continue; // cursor is inside — don't hide it mid-edit
     }
-    cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: ''}, hideDoneItems ? 'fold' : 'unfold');
+    cm.foldCode(CodeMirror.Pos(i, 0), {rangeFinder: doneRangeFinder, widget: makeDoneFoldWidget()}, hideDoneItems ? 'fold' : 'unfold');
   }
 }
 
