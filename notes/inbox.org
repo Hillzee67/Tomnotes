@@ -70,3 +70,5 @@ SCHEDULED: <2026-10-13 Tue>
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Decide about PAT testing redo or not ?
 SCHEDULED: <2026-10-13 Tue>
+*** TODO Update the assessment schedule
+SCHEDULED: <2026-10-13 Tue>
