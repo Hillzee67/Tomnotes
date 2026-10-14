@@ -71,13 +71,13 @@ SCHEDULED: <2026-10-19 Mon>
 SCHEDULED: <2026-10-13 Tue>
 *** DONE [#1] Update the assessment schedule
 SCHEDULED: <2026-10-14 Wed>
-*** TODO [#2] Get relief for Rhana and Fletcher for Monday maths pd
+*** TODO [#1] Get relief for Rhana and Fletcher for Monday maths pd
 SCHEDULED: <2026-10-15 Thu>
 *** TODO [#6] Relief for aspirant leaders James and rhana for next Thursday
 SCHEDULED: <2026-10-15 Thu>
 *** TODO [#3] Bright path science for Ben
 SCHEDULED: <2026-10-15 Thu>
-*** TODO [#1] Add more data to Mosaic
+*** TODO [#2] Add more data to Mosaic
 SCHEDULED: <2026-10-15 Thu>
 *** TODO Add the grand relay list to the aths score sheet
 *** TODO [#0] Look at plan for gymd
