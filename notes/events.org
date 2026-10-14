@@ -7,7 +7,7 @@
 <2026-10-14 Wed 08:15 +7d>
 *** Duty - Wed 1st Lunch Nature Play
 <2026-10-14 Wed 13:20 +7d>
-*** Duty - Thurs 2nd Lunch New Area
+*** [#4] Duty - Thurs 2nd Lunch New Area
 <2026-10-15 Thu 13:47 +7d>
 *** Duty - Fri Recess Kindy
 <2026-10-16 Fri 11:10 +14d>
@@ -35,7 +35,7 @@
 <2026-10-16 Fri>
 *** Dinner at Melissa's
 <2026-10-10 Sat 17:00>
-*** Screen use in Kindy PD
+*** [#3] Screen use in Kindy PD
 <2026-10-15 Thu 09:30>
 *** Staff Meeting
 <2026-10-13 Tue 15:15>
