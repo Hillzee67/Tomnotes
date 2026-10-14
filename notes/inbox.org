@@ -77,8 +77,8 @@ SCHEDULED: <2026-10-15 Thu>
 SCHEDULED: <2026-10-15 Thu>
 *** TODO [#3] Bright path science for Ben
 SCHEDULED: <2026-10-15 Thu>
-*** TODO [#0] Add more data to Mosaic
+*** TODO [#1] Add more data to Mosaic
 SCHEDULED: <2026-10-15 Thu>
 *** TODO Add the grand relay list to the aths score sheet
-*** TODO [#1] Look at plan for gymd
+*** TODO [#0] Look at plan for gymd
 SCHEDULED: <2026-10-15 Thu>
