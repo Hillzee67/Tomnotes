@@ -66,7 +66,7 @@ SCHEDULED: <2026-10-12 Mon>
 SCHEDULED: <2026-10-12 Mon>
 *** TODO Complete the PAT Testing overviews for each Year level
 *** TODO Start building the spreadsheet for classes
-SCHEDULED: <2026-10-14 Wed>
+SCHEDULED: <2026-10-19 Mon>
 *** DONE Decide about PAT testing redo or not ?
 SCHEDULED: <2026-10-13 Tue>
 *** DONE [#1] Update the assessment schedule
@@ -74,7 +74,7 @@ SCHEDULED: <2026-10-14 Wed>
 *** TODO [#2] Get relief for Rhana and Fletcher for Monday maths pd
 SCHEDULED: <2026-10-15 Thu>
 *** TODO Relief for aspirant leaders James and rhana for next Thursday
-SCHEDULED: <2026-10-14 Wed>
+SCHEDULED: <2026-10-15 Thu>
 *** TODO Bright path science for Ben
 SCHEDULED: <2026-10-15 Thu>
 *** TODO [#0] Add more data to Mosaic
