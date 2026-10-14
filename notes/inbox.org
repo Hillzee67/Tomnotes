@@ -76,7 +76,7 @@ SCHEDULED: <2026-10-15 Thu>
 *** TODO Relief for aspirant leaders James and rhana for next Thursday
 SCHEDULED: <2026-10-14 Wed>
 *** TODO Bright path science for Ben
-SCHEDULED: <2026-10-14 Wed>
+SCHEDULED: <2026-10-15 Thu>
 *** TODO [#0] Add more data to Mosaic
 SCHEDULED: <2026-10-15 Thu>
 *** TODO Add the grand relay list to the aths score sheet
