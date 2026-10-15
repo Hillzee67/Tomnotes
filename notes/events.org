@@ -39,3 +39,5 @@
 <2026-10-15 Thu 09:30>
 *** Staff Meeting
 <2026-10-13 Tue 15:15>
+*** Dentist appointment
+<2026-10-21 Wed 15:45>
