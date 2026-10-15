@@ -76,7 +76,7 @@ SCHEDULED: <2026-10-15 Thu>
 *** TODO [#6] Relief for aspirant leaders James and rhana for next Thursday
 - Not for Rhana and Emily can fill in for James No relief needed.
 SCHEDULED: <2026-10-22 Thu>
-*** TODO [#3] Bright path science for Ben
+*** DONE [#3] Bright path science for Ben
 SCHEDULED: <2026-10-15 Thu>
 *** TODO [#2] Add more data to Mosaic
 SCHEDULED: <2026-10-15 Thu>
