@@ -83,5 +83,5 @@ SCHEDULED: <2026-10-15 Thu>
 *** TODO Add the grand relay list to the aths score sheet
 *** DONE [#0] Look at plan for gymd
 SCHEDULED: <2026-10-15 Thu>
-*** TODO Bring a milk to school
+*** DONE Bring a milk to school
 SCHEDULED: <2026-10-16 Fri>
