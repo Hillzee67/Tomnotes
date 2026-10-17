@@ -41,3 +41,5 @@
 <2026-10-13 Tue 15:15>
 *** Dentist appointment
 <2026-10-21 Wed 15:45>
+*** Visit camp
+<2026-10-20 Tue>
