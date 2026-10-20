@@ -89,3 +89,8 @@ SCHEDULED: <2026-10-16 Fri>
 *** TODO Classlists - Convert scores to give one number for numeracy and Literacy
 SCHEDULED: <2026-10-20 Tue>
 *** TODO Intervention Discussion
+- There is no intervention!!
+- The EAs in each room are there as special needs EAs as a priority
+- They are a resource that you need to use as effectively as possible.
+- The DIBELS data is collected as a guide to measure progress for the students at risk so teachers can assess progress for regularly rather than waiing for the the middle and end of the year. If that data is not useful, is causing to much disruption to collect or is not being used we should stop collecting it. 
+
