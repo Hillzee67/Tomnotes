@@ -73,7 +73,7 @@ SCHEDULED: <2026-10-13 Tue>
 SCHEDULED: <2026-10-14 Wed>
 *** DONE [#1] Get relief for Rhana and Fletcher for Monday maths pd
 SCHEDULED: <2026-10-15 Thu>
-*** TODO [#6] Relief for aspirant leaders James and rhana for next Thursday
+*** TODO [#6] Relief for aspirant leaders James and Rhana for next Thursday.
 SCHEDULED: <2026-10-21 Wed>
 - Not for Rhana and Emily can fill in for James No relief needed.
 SCHEDULED: <2026-10-22 Thu>
