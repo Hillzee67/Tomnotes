@@ -87,7 +87,7 @@ SCHEDULED: <2026-10-15 Thu>
 *** DONE Bring a milk to school
 SCHEDULED: <2026-10-16 Fri>
 *** TODO Classlists - Convert scores to give one number for numeracy and Literacy
-SCHEDULED: <2026-10-20 Tue>
+SCHEDULED: <2026-10-21 Wed>
 *** TODO Intervention Discussion
 - There is no intervention!!
 - The EAs in each room are there as special needs EAs as a priority
