@@ -47,3 +47,5 @@
 <2026-10-25 Sun 12:45>
 *** PD - Bullying Framework
 <2026-10-29 Thu 10:00>
+*** Finance meeting
+<2026-11-03 Tue 15:15>
