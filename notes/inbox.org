@@ -57,7 +57,7 @@ SCHEDULED: <2026-10-11 Sun>
 SCHEDULED: <2026-10-12 Mon 08:30>
 *** DONE Look at the PAT testing for Year 2 & 4
 SCHEDULED: <2026-10-12 Mon>
-*** TODO Look into the new maths program
+*** DONE Look into the new maths program
 *** DONE Send the new Duty Roster to Emily
 SCHEDULED: <2026-10-12 Mon>
 *** DONE Email reports to the Fergusons
