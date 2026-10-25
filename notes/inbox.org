@@ -98,3 +98,5 @@ SCHEDULED: <2026-10-22 Thu>
 SCHEDULED: <2026-10-22 Thu>
 *** DONE get relief for Rhana for Monday
 SCHEDULED: <2026-10-23 Fri>
+*** TODO Add the friendsip info to the classlists sheet
+SCHEDULED: <2026-10-26 Mon>
