@@ -100,7 +100,7 @@ SCHEDULED: <2026-10-22 Thu>
 SCHEDULED: <2026-10-23 Fri>
 *** TODO Add the friendsip info to the classlists sheet
 SCHEDULED: <2026-10-26 Mon>
-*** TODO Staff meeting Agenda
+*** DONE Staff meeting Agenda
 SCHEDULED: <2026-10-26 Mon>
 *** TODO Add PAT testing to the classlists
 SCHEDULED: <2026-10-26 Mon>
