@@ -108,3 +108,5 @@ SCHEDULED: <2026-10-26 Mon>
 SCHEDULED: <2026-10-27 Tue>
 *** TODO Work on the Health plan re resilience
 SCHEDULED: <2026-10-28 Wed>
+*** TODO Work on relief for the Maths Plan and PD day
+SCHEDULED: <2026-10-28 Wed>
