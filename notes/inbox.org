@@ -104,5 +104,5 @@ SCHEDULED: <2026-10-27 Tue>
 SCHEDULED: <2026-10-26 Mon>
 *** DONE Add PAT testing to the classlists
 SCHEDULED: <2026-10-26 Mon>
-*** TODO Take a milk to work
+*** DONE Take a milk to work
 SCHEDULED: <2026-10-27 Tue>
