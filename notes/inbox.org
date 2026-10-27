@@ -99,7 +99,7 @@ SCHEDULED: <2026-10-22 Thu>
 *** DONE get relief for Rhana for Monday
 SCHEDULED: <2026-10-23 Fri>
 *** TODO Add the friendsip info to the classlists sheet
-SCHEDULED: <2026-10-27 Tue>
+SCHEDULED: <2026-10-28 Wed>
 *** DONE Staff meeting Agenda
 SCHEDULED: <2026-10-26 Mon>
 *** DONE Add PAT testing to the classlists
