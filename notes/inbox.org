@@ -106,3 +106,5 @@ SCHEDULED: <2026-10-26 Mon>
 SCHEDULED: <2026-10-26 Mon>
 *** DONE Take a milk to work
 SCHEDULED: <2026-10-27 Tue>
+*** TODO Work on the Health plan re resilience
+SCHEDULED: <2026-10-28 Wed>
