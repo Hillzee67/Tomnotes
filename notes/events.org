@@ -55,3 +55,5 @@
 <2026-11-10 Tue>
 *** Staff Meeting
 <2026-11-03 Tue 15:15>
+*** EA Interviews
+<2026-11-04 Wed 09:00>
