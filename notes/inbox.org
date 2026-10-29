@@ -109,7 +109,7 @@ SCHEDULED: <2026-10-27 Tue>
 *** DONE Work on the Health plan re resilience
 SCHEDULED: <2026-10-30 Fri>
 *** TODO Work on relief for the Maths Plan and PD day
-SCHEDULED: <2026-10-29 Thu>
+SCHEDULED: <2026-11-02 Mon>
 *** DONE Move Rm 5 relief from teams
 SCHEDULED: <2026-10-29 Thu>
 *** DONE Check-in on Johnathon
