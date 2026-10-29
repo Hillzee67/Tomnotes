@@ -114,7 +114,7 @@ SCHEDULED: <2026-11-02 Mon>
 SCHEDULED: <2026-10-29 Thu>
 *** DONE Check-in on Johnathon
 SCHEDULED: <2026-10-29 Thu>
-*** TODO Dott from Rm 13 and 5 for Fletcher or Rhana
+*** DONE Dott from Rm 13 and 5 for Fletcher or Rhana
 SCHEDULED: <2026-10-29 Thu>
 *** TODO Complete Danny's referee check
 SCHEDULED: <2026-10-30 Fri>
