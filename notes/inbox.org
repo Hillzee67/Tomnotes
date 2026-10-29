@@ -112,7 +112,7 @@ SCHEDULED: <2026-10-30 Fri>
 SCHEDULED: <2026-10-29 Thu>
 *** DONE Move Rm 5 relief from teams
 SCHEDULED: <2026-10-29 Thu>
-*** TODO Check-in on Johnathon
+*** DONE Check-in on Johnathon
 SCHEDULED: <2026-10-29 Thu>
 *** TODO Dott from Rm 13 and 5 for Fletcher or Rhana
 - Session 2 and 3 9:20 until recess
