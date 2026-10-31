@@ -124,7 +124,7 @@ SCHEDULED: <2026-10-30 Fri>
 SCHEDULED: <2026-10-30 Fri>
 *** TODO Get Teresa to look through the complexity rating
 SCHEDULED: <2026-10-30 Fri>
-*** TODO No relief for Nyah **
+*** DONE No relief for Nyah **
 SCHEDULED: <2026-10-30 Fri>
 - Callyn takes the class
 - PP1, Rm 11 and Rm 13 miss their PE DOTT
