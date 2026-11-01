@@ -138,7 +138,7 @@ SCHEDULED: <2026-10-31 Sat>
 **** Classes
 *** DONE Add compass notes for Molloy conversation
 SCHEDULED: <2026-10-31 Sat>
-*** TODO Check the caravan
+*** DONE Check the caravan
 SCHEDULED: <2026-10-31 Sat>
 *** TODO Put in a leave application for golf trip
 SCHEDULED: <2026-11-02 Mon>
