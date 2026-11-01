@@ -36,7 +36,7 @@ SCHEDULED: <2026-09-21 Mon>
 ** Classlists 2027
 *** DONE send out the friends preferences
 SCHEDULED: <2026-10-19 Mon>
-*** TODO Classlists - experiment with the classlist app to see how it will work.
+*** DONE Classlists - experiment with the classlist app to see how it will work.
 *** DONE Classlists - decide on the academic sources used for the classes.
 SCHEDULED: <2026-10-12 Mon>
 *** DONE Classlists - start to prep the friend selection sheets
