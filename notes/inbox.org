@@ -158,3 +158,5 @@ SCHEDULED: <2026-11-04 Wed>
 *** DONE Talk to carla re Zones of Regulation
 SCHEDULED: <2026-11-02 Mon>
 
+*** TODO Bring Milk to school
+SCHEDULED: <2026-11-03 Tue>
