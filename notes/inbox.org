@@ -133,7 +133,8 @@ SCHEDULED: <2026-10-30 Fri>
 SCHEDULED: <2026-11-02 Mon>
 *** TODO Staff Meeting Prep **
 SCHEDULED: <2026-11-02 Mon>
-**** Maths
+**** Maths & English
+- Committee Meetings
 **** Health
 **** Classes
 *** DONE Add compass notes for Molloy conversation
