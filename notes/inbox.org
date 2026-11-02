@@ -132,7 +132,7 @@ SCHEDULED: <2026-10-30 Fri>
 *** TODO Talk to Carla re Finn walking out of class
 SCHEDULED: <2026-11-02 Mon>
 *** TODO Staff Meeting Prep **
-SCHEDULED: <2026-10-31 Sat>
+SCHEDULED: <2026-11-02 Mon>
 **** Maths
 **** Health
 **** Classes
