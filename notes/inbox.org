@@ -139,7 +139,10 @@ SCHEDULED: <2026-11-02 Mon>
 - Not paying for URStrong
 - Looking in more depth into the Zones of Regulation.
 - Look into resilence and abest practice
-**** Classes
+**** Classes Complexity
+- work independently
+- Work effectively in a group
+-
 *** DONE Add compass notes for Molloy conversation
 SCHEDULED: <2026-10-31 Sat>
 *** DONE Check the caravan
