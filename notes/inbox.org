@@ -140,9 +140,10 @@ SCHEDULED: <2026-11-02 Mon>
 - Looking in more depth into the Zones of Regulation.
 - Look into resilence and abest practice
 **** Classes Complexity
-- follows instructions and works independently
-- reponds and accepts situations approriately
+- Follows instructions and works independently
+- Reponds and accepts situations approriately
 - Doesn't create unnecessary conflict
+- Requires the proportional amount of time to ensure success.
 *** DONE Add compass notes for Molloy conversation
 SCHEDULED: <2026-10-31 Sat>
 *** DONE Check the caravan
