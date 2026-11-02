@@ -138,7 +138,8 @@ SCHEDULED: <2026-11-02 Mon>
 **** Health
 - Not paying for URStrong
 - Looking in more depth into the Zones of Regulation.
-- Look into resilence and abest practice
+- Look into resilence and best practice in that space
+- Map out where URStrong might be used in the curriculum
 **** Classes Complexity
 - Follows instructions and works independently
 - Reponds and accepts situations approriately
