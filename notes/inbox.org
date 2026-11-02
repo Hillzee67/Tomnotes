@@ -136,6 +136,9 @@ SCHEDULED: <2026-11-02 Mon>
 **** Maths & English
 - Committee Meetings
 **** Health
+- Not paying for URStrong
+- Looking in more depth into the Zones of Regulation.
+- Look into resilence and abest practice
 **** Classes
 *** DONE Add compass notes for Molloy conversation
 SCHEDULED: <2026-10-31 Sat>
