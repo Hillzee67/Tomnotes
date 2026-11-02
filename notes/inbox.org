@@ -157,5 +157,4 @@ SCHEDULED: <2026-11-03 Tue>
 SCHEDULED: <2026-11-04 Wed>
 *** DONE Talk to carla re Zones of Regulation
 SCHEDULED: <2026-11-02 Mon>
-*** TODO Give Blood
-SCHEDULED: <2026-11-05 Thu 15:45>
+
