@@ -61,3 +61,5 @@
 <2026-11-02 Mon 17:00>
 *** Bring Milk to work
 <2026-11-03 Tue>
+*** Give Blood
+<2026-11-05 Thu 15:45>
