@@ -146,5 +146,5 @@ SCHEDULED: <2026-11-02 Mon>
 SCHEDULED: <2026-11-03 Tue>
 *** TODO Finalise the Classes info
 SCHEDULED: <2026-11-02 Mon>
-*** TODO Talk to carla re Zones of Regulation
+*** DONE Talk to carla re Zones of Regulation
 SCHEDULED: <2026-11-02 Mon>
