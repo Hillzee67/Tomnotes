@@ -25,4 +25,7 @@ SCHEDULED: <2026-10-10 Sat +1y>
 ** Brayden's Birthday
 SCHEDULED: <2027-02-06 Sat +1y>
 ** Ashlyn's
-SCHEDULED: <2027-04-23 Fri>
+SCHEDULED: <2027-04-23 Fri +1y>
+** We moved into our house
+SCHEDULED: <1996-12-14 Sat +1y>
+
