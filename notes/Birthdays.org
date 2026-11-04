@@ -29,5 +29,5 @@ SCHEDULED: <2027-04-23 Fri +1y>
 ** We moved into our house
 SCHEDULED: <1996-12-14 Sat +1y>
 ** New app created
-SCHEDULED: <2024-11-06 Wed>
+<2024-11-06 Wed>
 
