@@ -97,6 +97,7 @@
     border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,.4); opacity:.9;
   }
   .task.pending{opacity:.55;}
+  .age-badge{font-family:var(--mono); font-size:11px; color:var(--gold); margin-left:6px; white-space:nowrap;}
   .task .meta .file{color:var(--accent-dim);}
   .task.overdue .meta{color:var(--rust);}
   .task.today .meta{color:var(--gold);}
@@ -567,6 +568,19 @@ function occursOnDate(anchorStr, repeat, targetStr){
   return false;
 }
 
+// For a yearly-repeating event, how many years it has been since its
+// original date: "turns 61" on a birthday, "12 years" on an anniversary.
+// The number comes from the year written in the event's own date, so that
+// needs to be the real birth/death year — e.g. <1965-08-27 Wed +1y>.
+function ageLabel(t, occurrenceDate){
+  if (!occurrenceDate || t.type !== 'event' || !t.scheduled) return '';
+  if (!t.scheduledRepeat || t.scheduledRepeat.unit !== 'y') return '';
+  const years = Number(occurrenceDate.slice(0, 4)) - Number(t.scheduled.slice(0, 4));
+  if (!(years >= 1)) return '';                       // the original date itself, or a future one
+  if (/birth\s*day|b-?day/i.test(t.title)) return `turns ${years}`;
+  return years === 1 ? '1 year' : `${years} years`;
+}
+
 function repeatLabel(repeat){
   if (!repeat) return '';
   if (repeat.unit === 'd') return repeat.n === 1 ? 'daily' : `every ${repeat.n} days`;
@@ -769,7 +783,7 @@ function renderAgenda(){
         occursOnDate(t.deadline, t.deadlineRepeat, key)
       )
       .sort(orderSort);
-    days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks);
+    days += dayGroup(i === 0 ? 'today' : 'upcoming', dayLabel(d, i), dayTasks, key);
   }
 
   main.innerHTML = `<h1><span class="star">*</span> agenda</h1>` +
@@ -782,7 +796,7 @@ function renderAgenda(){
     group('unscheduled', 'Unscheduled', unscheduled);
 }
 
-function taskRow(t, cls){
+function taskRow(t, cls, occurrenceDate){
   const repeat = t.deadlineRepeat || t.scheduledRepeat;
   const repLabel = repeat ? repeatLabel(repeat) : '';
   const dateLabel = t.deadline ? `deadline ${t.deadline}` : (t.scheduled ? `scheduled ${t.scheduled}` : '');
@@ -803,10 +817,12 @@ function taskRow(t, cls){
   }
   if (t.type === 'event'){
     const timeLabel = t.time ? `${t.time} · ` : '';
+    const age = ageLabel(t, occurrenceDate);
+    const ageBadge = age ? ` <span class="age-badge">${escapeHtml(age)}</span>` : '';
     return `<div class="task ${cls} event" data-file="${escapeHtml(t.file)}" data-line="${t.lineIndex}">
       <span class="dot" aria-hidden="true"></span>
       <div class="body" ${jumpAttrs}>
-        <div class="title">${escapeHtml(t.title)}</div>
+        <div class="title">${escapeHtml(t.title)}${ageBadge}</div>
         <div class="meta">${timeLabel}<span class="file">${escapeHtml(t.file.split('/').pop())}</span>${repLabel ? ' · ' + repLabel : ''}</div>
       </div>
       ${dragHandle}
@@ -827,9 +843,9 @@ function group(cls, label, items){
   return `<section class="group ${cls}"><h2>${label}</h2>${items.map(t => taskRow(t, cls)).join('')}</section>`;
 }
 
-function dayGroup(cls, label, items){
+function dayGroup(cls, label, items, dateKey){
   const rows = items.length
-    ? items.map(t => taskRow(t, cls)).join('')
+    ? items.map(t => taskRow(t, cls, dateKey)).join('')
     : `<div class="empty" style="padding:4px 2px;">nothing scheduled</div>`;
   return `<section class="group ${cls}"><h2>${label}</h2>${rows}</section>`;
 }
