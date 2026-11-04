@@ -160,3 +160,4 @@ SCHEDULED: <2026-11-02 Mon>
 
 *** DONE Bring Milk to school
 SCHEDULED: <2026-11-03 Tue>
+*** TODO Work out a resilience framework **
