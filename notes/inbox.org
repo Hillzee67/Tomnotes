@@ -152,7 +152,7 @@ SCHEDULED: <2026-10-31 Sat>
 *** TODO Put in a leave application for golf trip
 SCHEDULED: <2026-11-03 Tue>
 *** TODO Check the report setup
-SCHEDULED: <2026-11-03 Tue>
+SCHEDULED: <2026-11-04 Wed>
 *** TODO Finalise the Classes info
 SCHEDULED: <2026-11-04 Wed>
 *** DONE Talk to carla re Zones of Regulation
