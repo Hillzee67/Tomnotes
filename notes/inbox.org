@@ -131,7 +131,7 @@ SCHEDULED: <2026-10-30 Fri>
 - No choosing Emily because of the specialist Showcase.
 *** DONE Talk to Carla re Finn walking out of class
 SCHEDULED: <2026-11-02 Mon>
-*** TODO Staff Meeting Prep **
+*** DONE Staff Meeting Prep **
 SCHEDULED: <2026-11-03 Tue>
 **** Maths & English
 - Committee Meetings
