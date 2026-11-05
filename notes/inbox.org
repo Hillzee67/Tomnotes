@@ -165,3 +165,5 @@ SCHEDULED: <2026-11-03 Tue>
 SCHEDULED: <2026-11-06 Fri>
 *** TODO Make a decision on the class structure
 SCHEDULED: <2026-11-06 Fri>
+*** TODO Start to empty cupboards
+SCHEDULED: <2026-11-07 Sat>
