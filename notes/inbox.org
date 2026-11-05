@@ -151,7 +151,7 @@ SCHEDULED: <2026-10-31 Sat>
 SCHEDULED: <2026-10-31 Sat>
 *** DONE Put in a leave application for golf trip
 SCHEDULED: <2026-11-04 Wed>
-*** TODO Check the report setup
+*** DONE Check the report setup
 SCHEDULED: <2026-11-04 Wed>
 *** TODO Finalise the Classes info
 SCHEDULED: <2026-11-04 Wed>
