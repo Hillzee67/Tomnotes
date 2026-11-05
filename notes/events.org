@@ -63,3 +63,5 @@
 <2026-11-05 Thu 15:45>
 *** Library Book Due
 <2026-11-30 Mon>
+*** Kindy meeting 1
+<2026-11-06 Fri 09:00>
