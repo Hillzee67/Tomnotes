@@ -154,7 +154,7 @@ SCHEDULED: <2026-11-04 Wed>
 *** DONE Check the report setup
 SCHEDULED: <2026-11-04 Wed>
 *** TODO Finalise the Classes info
-SCHEDULED: <2026-11-04 Wed>
+SCHEDULED: <2026-11-05 Thu>
 *** DONE Talk to carla re Zones of Regulation
 SCHEDULED: <2026-11-02 Mon>
 
