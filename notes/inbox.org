@@ -171,3 +171,5 @@ SCHEDULED: <2026-11-07 Sat>
 SCHEDULED: <2026-11-07 Sat>
 *** DONE Print lincs documents
 SCHEDULED: <2026-11-06 Fri>
+*** TODO Catch up athebits missing from the classes info
+SCHEDULED: <2026-11-09 Mon>
