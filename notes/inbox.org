@@ -169,5 +169,5 @@ SCHEDULED: <2026-11-06 Fri>
 SCHEDULED: <2026-11-07 Sat>
 *** TODO Charge the caravan battery (battery charger)
 SCHEDULED: <2026-11-07 Sat>
-*** TODO Print lincs documents
+*** DONE Print lincs documents
 SCHEDULED: <2026-11-06 Fri>
