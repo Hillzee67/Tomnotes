@@ -175,3 +175,5 @@ SCHEDULED: <2026-11-06 Fri>
 SCHEDULED: <2026-11-09 Mon>
 *** TODO Have a go at making the classes
 SCHEDULED: <2026-11-09 Mon>
+*** TODO Plan the staff meeting
+SCHEDULED: <2026-11-09 Mon>
