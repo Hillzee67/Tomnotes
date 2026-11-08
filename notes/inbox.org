@@ -182,3 +182,4 @@ SCHEDULED: <2026-11-09 Mon>
 - Curriculum meeting Health, Tech amd HAAS
 *** TODO Follow up with the relief for Danny, Rhana and Fletcher
 SCHEDULED: <2026-11-09 Mon>
+*** TODO Finish the doors on the staircase cupboard
