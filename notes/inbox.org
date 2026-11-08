@@ -184,3 +184,4 @@ SCHEDULED: <2026-11-09 Mon>
 SCHEDULED: <2026-11-09 Mon>
 *** TODO Finish the doors on the staircase cupboard
 *** TODO Panelling on the brickwall on the kitchen bench
+*** TODO Build the upper cupboard near the stairs
