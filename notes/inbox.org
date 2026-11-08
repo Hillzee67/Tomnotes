@@ -167,7 +167,7 @@ SCHEDULED: <2026-11-06 Fri>
 SCHEDULED: <2026-11-06 Fri>
 *** DONE Start to empty cupboards
 SCHEDULED: <2026-11-07 Sat>
-*** TODO Charge the caravan battery (battery charger)
+*** DONE Charge the caravan battery (battery charger)
 SCHEDULED: <2026-11-07 Sat>
 *** DONE Print lincs documents
 SCHEDULED: <2026-11-06 Fri>
