@@ -67,3 +67,5 @@
 <2026-11-06 Fri 09:00>
 *** Staff Meeting
 <2026-11-10 Tue 15:15>
+*** Fly to Adelaide for golf
+<2026-11-15 Sun 06:00>
