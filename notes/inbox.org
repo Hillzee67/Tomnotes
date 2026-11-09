@@ -176,7 +176,7 @@ SCHEDULED: <2026-11-06 Fri>
 SCHEDULED: <2026-11-09 Mon>
 *** DONE Have a go at making the classes
 SCHEDULED: <2026-11-09 Mon>
-*** TODO Plan the staff meeting **
+*** DONE Plan the staff meeting **
 SCHEDULED: <2026-11-09 Mon>
 - Look at classes
 - Look at the assessment schedule
