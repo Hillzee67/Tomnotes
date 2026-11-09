@@ -181,7 +181,7 @@ SCHEDULED: <2026-11-09 Mon>
 - Look at classes
 - Look at the assessment schedule
 - Curriculum meeting Health, Tech amd HAAS
-*** TODO Follow up with the relief for Danny, Rhana and Fletcher
+*** DONE Follow up with the relief for Danny, Rhana and Fletcher
 SCHEDULED: <2026-11-09 Mon>
 *** TODO Finish the doors on the staircase cupboard
 *** TODO Panelling on the brickwall on the kitchen bench
