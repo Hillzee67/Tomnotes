@@ -188,7 +188,7 @@ SCHEDULED: <2026-11-09 Mon>
 *** TODO Build the upper cupboard near the stairs
 *** TODO Get Two relief for Thursday (find out about Danny)
 SCHEDULED: <2026-11-10 Tue>
-*** TODO Finish the Year 2 , 5 and 6 clasess
+*** DONE Finish the Year 2 , 5 and 6 clasess
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Make the usb's for the meeting
 SCHEDULED: <2026-11-10 Tue>
