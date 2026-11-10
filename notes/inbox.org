@@ -187,10 +187,10 @@ SCHEDULED: <2026-11-09 Mon>
 *** TODO Panelling on the brickwall on the kitchen bench
 *** TODO Build the upper cupboard near the stairs
 *** TODO Get Two relief for Thursday (find out about Danny)
-SCHEDULED: <2026-11-10 Tue>
+SCHEDULED: <2026-11-11 Wed>
 *** DONE Finish the Year 2 , 5 and 6 clasess
 SCHEDULED: <2026-11-10 Tue>
 *** DONE Make the usb's for the meeting
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Finalise the assessment schedule
-SCHEDULED: <2026-11-10 Tue>
+SCHEDULED: <2026-11-11 Wed>
