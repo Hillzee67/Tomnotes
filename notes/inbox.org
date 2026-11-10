@@ -190,7 +190,7 @@ SCHEDULED: <2026-11-09 Mon>
 SCHEDULED: <2026-11-10 Tue>
 *** DONE Finish the Year 2 , 5 and 6 clasess
 SCHEDULED: <2026-11-10 Tue>
-*** TODO Make the usb's for the meeting
+*** DONE Make the usb's for the meeting
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Finalise the assessment schedule
 SCHEDULED: <2026-11-10 Tue>
