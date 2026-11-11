@@ -193,11 +193,11 @@ SCHEDULED: <2026-11-10 Tue>
 *** DONE Make the usb's for the meeting
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Finalise the assessment schedule
-SCHEDULED: <2026-11-11 Wed>
+SCHEDULED: <2026-11-12 Thu>
 *** DONE Go through the class lists again
 SCHEDULED: <2026-11-11 Wed>
 *** TODO Hit some golf balls
-SCHEDULED: <2026-11-11 Wed>
+SCHEDULED: <2026-11-12 Thu>
 *** DONE Check out Dancing after recess
 SCHEDULED: <2026-11-11 Wed 11:40>
 *** TODO Follow up on the Heggerty and KAT assessment Data
