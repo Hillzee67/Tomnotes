@@ -194,7 +194,7 @@ SCHEDULED: <2026-11-10 Tue>
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Finalise the assessment schedule
 SCHEDULED: <2026-11-11 Wed>
-*** TODO Go through the class lists again
+*** DONE Go through the class lists again
 SCHEDULED: <2026-11-11 Wed>
 *** TODO Hit some golf balls
 SCHEDULED: <2026-11-11 Wed>
