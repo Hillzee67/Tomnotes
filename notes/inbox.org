@@ -186,7 +186,7 @@ SCHEDULED: <2026-11-09 Mon>
 *** TODO Finish the doors on the staircase cupboard
 *** TODO Panelling on the brickwall on the kitchen bench
 *** TODO Build the upper cupboard near the stairs
-*** TODO Get Two relief for Thursday (find out about Danny)
+*** DONE Get Two relief for Thursday (find out about Danny)
 SCHEDULED: <2026-11-11 Wed>
 *** DONE Finish the Year 2 , 5 and 6 clasess
 SCHEDULED: <2026-11-10 Tue>
