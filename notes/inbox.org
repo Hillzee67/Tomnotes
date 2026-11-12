@@ -202,7 +202,7 @@ SCHEDULED: <2026-11-12 Thu>
 SCHEDULED: <2026-11-11 Wed 11:40>
 *** TODO Follow up on the Heggerty and KAT assessment Data
 SCHEDULED: <2026-11-13 Fri>
-*** TODO Running Club
+*** DONE Running Club
 SCHEDULED: <2026-11-12 Thu>
 *** TODO Sort the duties
 SCHEDULED: <2026-11-12 Thu>
