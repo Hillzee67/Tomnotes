@@ -197,7 +197,7 @@ SCHEDULED: <2026-11-13 Fri>
 *** DONE Go through the class lists again
 SCHEDULED: <2026-11-11 Wed>
 *** TODO Hit some golf balls
-SCHEDULED: <2026-11-12 Thu>
+SCHEDULED: <2026-11-13 Fri>
 *** DONE Check out Dancing after recess
 SCHEDULED: <2026-11-11 Wed 11:40>
 *** TODO Follow up on the Heggerty and KAT assessment Data
