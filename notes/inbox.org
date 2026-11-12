@@ -193,7 +193,7 @@ SCHEDULED: <2026-11-10 Tue>
 *** DONE Make the usb's for the meeting
 SCHEDULED: <2026-11-10 Tue>
 *** TODO Finalise the assessment schedule
-SCHEDULED: <2026-11-12 Thu>
+SCHEDULED: <2026-11-13 Fri>
 *** DONE Go through the class lists again
 SCHEDULED: <2026-11-11 Wed>
 *** TODO Hit some golf balls
