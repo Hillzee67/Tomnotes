@@ -206,3 +206,5 @@ SCHEDULED: <2026-11-13 Fri>
 SCHEDULED: <2026-11-12 Thu>
 *** DONE Sort the duties
 SCHEDULED: <2026-11-12 Thu>
+*** TODO Finalise the classes
+SCHEDULED: <2026-11-13 Fri>
