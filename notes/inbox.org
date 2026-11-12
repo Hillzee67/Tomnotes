@@ -161,7 +161,7 @@ SCHEDULED: <2026-11-02 Mon>
 *** DONE Bring Milk to school
 SCHEDULED: <2026-11-03 Tue>
 *** TODO Work out a resilience framework **
-SCHEDULED: <2026-11-12 Thu>
+SCHEDULED: <2026-11-13 Fri>
 *** DONE Get the pin up board out
 SCHEDULED: <2026-11-06 Fri>
 *** DONE Make a decision on the class structure
