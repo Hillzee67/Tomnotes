@@ -204,5 +204,5 @@ SCHEDULED: <2026-11-11 Wed 11:40>
 SCHEDULED: <2026-11-13 Fri>
 *** DONE Running Club
 SCHEDULED: <2026-11-12 Thu>
-*** TODO Sort the duties
+*** DONE Sort the duties
 SCHEDULED: <2026-11-12 Thu>
