@@ -71,3 +71,5 @@
 <2026-11-15 Sun 06:00>
 *** Student leader voting
 <2026-11-13 Fri>
+*** Staff meeting
+<2026-11-24 Tue 15:15>
