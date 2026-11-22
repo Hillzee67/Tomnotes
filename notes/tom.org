@@ -18,19 +18,22 @@ SCHEDULED: <2026-08-26 Wed>
 <2026-09-26 Sat>
 ** Bills
 *** Overall Bills
-| Date    | Bill    | Cost    |
-|---------+---------+---------|
-| 18/9/26 | Rates 1 | 643     |
-| 25/9/26 | Water   | 342.19  |
-| 25/9/26 | Power   | 342     |
-
-| Total   |         | 1327.19 |
+| Date     | Bill    | Cost    |
+|----------+---------+---------|
+| 18/9/26  | Rates 1 | 643     |
+| 25/9/26  | Water   | 342.19  |
+| 25/9/26  | Power   | 342     |
+| 17/11/26 | Power   | 276.08  |
+| 18/11/26 | Water   | 327.27  |
+| Total    |         | 1930.54 |
 
 *** DONE Pay the tax bill - $231
 SCHEDULED: <2026-10-22 Thu>
 *** DONE Pay the rates 1 $643 
 SCHEDULED: <2026-09-18> 
 *** Bills Totals
+*** TODO Gas Bill - $342.20
+SCHEDULED: <2026-11-27 Fri>
 *** DONE Water Bill -$327.27
 SCHEDULED: <2026-11-20 Fri>
 *** DONE Power Bill - $276
