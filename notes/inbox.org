@@ -212,3 +212,5 @@ SCHEDULED: <2026-11-23 Mon>
 SCHEDULED: <2026-11-25 Wed>
 *** DONE SIM on RTP
 SCHEDULED: <2026-11-23 Mon>
+*** TODO Sign up for opt-in Naplan
+SCHEDULED: <2027-03-23 Tue>
