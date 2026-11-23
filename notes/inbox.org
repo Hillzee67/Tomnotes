@@ -206,7 +206,7 @@ SCHEDULED: <2026-11-23 Mon>
 SCHEDULED: <2026-11-12 Thu>
 *** DONE Sort the duties
 SCHEDULED: <2026-11-12 Thu>
-*** TODO Finalise the classes
+*** DONE Finalise the classes
 SCHEDULED: <2026-11-23 Mon>
 *** TODO Continue to build the data combiner
 SCHEDULED: <2026-11-25 Wed>
