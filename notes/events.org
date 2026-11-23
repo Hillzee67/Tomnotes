@@ -73,3 +73,5 @@
 <2026-11-13 Fri>
 *** Staff meeting
 <2026-11-24 Tue 15:15>
+*** Finance committee meeting
+<2026-11-25 Wed 15:15>
