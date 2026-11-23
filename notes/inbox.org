@@ -210,5 +210,5 @@ SCHEDULED: <2026-11-12 Thu>
 SCHEDULED: <2026-11-23 Mon>
 *** TODO Continue to build the data combiner
 SCHEDULED: <2026-11-25 Wed>
-*** TODO SIM on RTP
+*** DONE SIM on RTP
 SCHEDULED: <2026-11-23 Mon>
