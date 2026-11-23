@@ -217,3 +217,5 @@ SCHEDULED: <2027-03-23 Tue>
 *** TODO Work through the connection between reading assessment **
 SCHEDULED: <2026-11-24 Tue>
 - Is this data we could look at during the staff meeting?
+*** TODO Teacher rego renewal
+SCHEDULED: <2026-11-25 Wed>
