@@ -215,7 +215,7 @@ SCHEDULED: <2026-11-23 Mon>
 *** TODO Sign up for opt-in Naplan
 SCHEDULED: <2027-03-23 Tue>
 *** TODO Work through the connection between reading assessment **
-SCHEDULED: <2026-11-24 Tue>
+SCHEDULED: <2026-11-26 Thu>
 - Is this data we could look at during the staff meeting?
 *** TODO Teacher rego renewal
 SCHEDULED: <2026-11-25 Wed>
