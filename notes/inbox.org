@@ -225,3 +225,5 @@ SCHEDULED: <2026-11-26 Thu>
 SCHEDULED: <2026-11-27 Fri>
 *** TODO Add jonathon to a year 5 class
 SCHEDULED: <2026-11-27 Fri>
+*** TODO Hang some Christmas lights
+SCHEDULED: <2026-11-27 Fri>
