@@ -217,8 +217,8 @@ SCHEDULED: <2027-03-23 Tue>
 *** TODO Work through the connection between reading assessment **
 SCHEDULED: <2026-11-27 Fri>
 - Is this data we could look at during the staff meeting?
-*** TODO Teacher rego renewal
-SCHEDULED: <2026-11-26 Thu>
+*** TODO Teacher rego renewal get Andrew to sign
+SCHEDULED: <2026-11-27 Fri>
 *** DONE Bring tea bags and milk to school
 SCHEDULED: <2026-11-26 Thu>
 *** TODO Sign The CMS agreements
