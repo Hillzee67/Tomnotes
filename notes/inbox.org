@@ -219,5 +219,5 @@ SCHEDULED: <2026-11-26 Thu>
 - Is this data we could look at during the staff meeting?
 *** TODO Teacher rego renewal
 SCHEDULED: <2026-11-26 Thu>
-*** TODO Bring tea bags and milk to school
+*** DONE Bring tea bags and milk to school
 SCHEDULED: <2026-11-26 Thu>
