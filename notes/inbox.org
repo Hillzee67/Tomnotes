@@ -201,7 +201,7 @@ SCHEDULED: <2026-11-13 Fri>
 *** DONE Check out Dancing after recess
 SCHEDULED: <2026-11-11 Wed 11:40>
 *** TODO Follow up on the Heggerty and KAT assessment Data
-SCHEDULED: <2026-11-26 Thu>
+SCHEDULED: <2026-11-27 Fri>
 *** DONE Running Club
 SCHEDULED: <2026-11-12 Thu>
 *** DONE Sort the duties
@@ -215,7 +215,7 @@ SCHEDULED: <2026-11-23 Mon>
 *** TODO Sign up for opt-in Naplan
 SCHEDULED: <2027-03-23 Tue>
 *** TODO Work through the connection between reading assessment **
-SCHEDULED: <2026-11-26 Thu>
+SCHEDULED: <2026-11-27 Fri>
 - Is this data we could look at during the staff meeting?
 *** TODO Teacher rego renewal
 SCHEDULED: <2026-11-26 Thu>
