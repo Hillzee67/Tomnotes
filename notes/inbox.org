@@ -223,7 +223,7 @@ SCHEDULED: <2026-11-27 Fri>
 SCHEDULED: <2026-11-26 Thu>
 *** TODO Sign The CMS agreements
 SCHEDULED: <2026-11-27 Fri>
-*** TODO Add jonathon to a year 5 class
+*** DONE Add jonathon to a year 5 class
 SCHEDULED: <2026-11-27 Fri>
 *** TODO Hang some Christmas lights
 SCHEDULED: <2026-11-27 Fri>
